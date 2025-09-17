@@ -26,7 +26,7 @@ export default function CandidatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState(''); // Empty string means "All Stages"
 
-  // Fetch candidates when the stage filter changes
+  // Fetch candidates when the stage filter changes (applies to both views)
   useEffect(() => {
     const fetchCandidates = async () => {
       setLoading(true);
@@ -144,7 +144,7 @@ export default function CandidatesPage() {
           </Box>
         </Box>
       ) : (
-        <KanbanBoard initialCandidates={allCandidates} />
+        <KanbanBoard initialCandidates={filteredCandidates} />
       )}
     </Box>
   );

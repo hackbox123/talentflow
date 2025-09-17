@@ -1,5 +1,5 @@
 // src/features/candidates/KanbanColumn.tsx
-import { Box, Heading } from '@chakra-ui/react';
+import { Box, Heading, Text } from '@chakra-ui/react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { type Candidate } from '../../api/db';
@@ -22,19 +22,29 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
   return (
     <Box
       ref={setNodeRef}
-      bg="gray.100"
-      borderRadius="md"
+      bg="gray.50"
+      borderRadius="lg"
       p={4}
       flex="1"
       minW="300px" // Add min-width to prevent squishing
       minH="500px"
+      borderWidth="1px"
+      borderColor="gray.200"
     >
-      <Heading size="md" mb={4} textTransform="capitalize">{stage}</Heading>
+      <Heading size="sm" mb={4} textTransform="capitalize" color="gray.700">
+        {stage} ({candidates.length})
+      </Heading>
       {/* This makes all cards within the column sortable */}
       <SortableContext items={candidates.map(c => c.id!)} strategy={verticalListSortingStrategy}>
-        {candidates.map(candidate => (
-          <CandidateCard key={candidate.id} candidate={candidate} />
-        ))}
+        {candidates.length > 0 ? (
+          candidates.map(candidate => (
+            <CandidateCard key={candidate.id} candidate={candidate} />
+          ))
+        ) : (
+          <Text fontSize="sm" color="gray.500" textAlign="center" py={8}>
+            No candidates
+          </Text>
+        )}
       </SortableContext>
     </Box>
   );

@@ -18,6 +18,7 @@ export const CandidateCard = ({ candidate }: Props) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: transform ? 1 : 0,
   };
 
   return (
@@ -29,10 +30,11 @@ export const CandidateCard = ({ candidate }: Props) => {
       p={3}
       bg="white"
       borderWidth="1px"
-      borderRadius="md"
-      boxShadow="sm"
+      borderRadius="lg"
+      boxShadow={transform ? 'md' : 'sm'}
       cursor="grab"
       mb={3}
+      _hover={{ boxShadow: 'md' }}
     >
       <Heading size="xs">{candidate.name}</Heading>
       <Text fontSize="sm" color="gray.600">{candidate.email}</Text>

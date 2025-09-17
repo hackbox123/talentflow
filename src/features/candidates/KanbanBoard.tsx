@@ -1,7 +1,17 @@
 // src/features/candidates/KanbanBoard.tsx
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Box, HStack, useToast } from '@chakra-ui/react';
-import { DndContext, type DragEndEvent, DragOverlay } from '@dnd-kit/core';
+import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  closestCorners,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { type Candidate } from '../../api/db';
 import { KanbanColumn } from './KanbanColumn';
 import { CandidateCard } from './CandidateCard';
@@ -14,9 +24,24 @@ interface Props {
 
 export const KanbanBoard = ({ initialCandidates }: Props) => {
   const [candidates, setCandidates] = useState(initialCandidates);
+  
+  // Update candidates when initialCandidates prop changes (for search filtering)
+  useEffect(() => {
+    setCandidates(initialCandidates);
+  }, [initialCandidates]);
   // State to hold the candidate being dragged, for the DragOverlay
   const [activeCandidate, setActiveCandidate] = useState<Candidate | null>(null);
   const toast = useToast();
+
+  // Optimized sensors for smoother DnD
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 10 }, // prevent accidental drags
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Group candidates by stage using useMemo for performance
   const candidatesByStage = useMemo(() => {
@@ -28,8 +53,8 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
   }, [candidates]);
 
 
-  // The main drag-and-drop handler
-  async function handleDragEnd(event: DragEndEvent) {
+  // Optimized drag-and-drop handler with useCallback
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCandidate(null);
 
@@ -82,27 +107,34 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
       });
       setCandidates(originalCandidates);
     }
-  }
+  }, [candidates, toast]);
 
-  function handleDragStart(event: any) {
+  const handleDragStart = useCallback((event: any) => {
     // When dragging starts, find the candidate and set it as active
     const candidate = event.active.data.current?.candidate;
     if (candidate) {
       setActiveCandidate(candidate);
     }
-  }
+  }, []);
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <HStack spacing={4} align="flex-start">
-        {STAGES.map(stage => (
-          <KanbanColumn
-            key={stage}
-            stage={stage}
-            candidates={candidatesByStage[stage]}
-          />
-        ))}
-      </HStack>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <Box overflowX="auto" py={2}>
+        <HStack spacing={4} align="flex-start" minW="1200px">
+          {STAGES.map(stage => (
+            <KanbanColumn
+              key={stage}
+              stage={stage}
+              candidates={candidatesByStage[stage] || []}
+            />
+          ))}
+        </HStack>
+      </Box>
       {/* This overlay creates the smooth "ghost" card that follows your mouse */}
       <DragOverlay>
         {activeCandidate ? <CandidateCard candidate={activeCandidate} /> : null}

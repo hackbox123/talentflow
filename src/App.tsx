@@ -2,6 +2,7 @@
 import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import JobsPage from './pages/JobsPage';
+import JobEditorPage from './pages/JobEditorPage';
 import CandidatesPage from './pages/CandidatesPage';
 import { Layout } from './components/Layout';
 import JobDetailPage from './pages/JobDetailPage';
@@ -20,6 +21,8 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <JobsPage /> },
       { path: "/jobs", element: <JobsPage /> },
+      { path: "/jobs/new", element: <JobEditorPage /> },
+      { path: "/jobs/:jobId/edit", element: <JobEditorPage /> },
       { path: "/jobs/:jobId", element: <JobDetailPage /> },
       { path: "/candidates", element: <CandidatesPage /> },
       { path: "/candidates/:candidateId", element: <CandidateProfilePage /> },

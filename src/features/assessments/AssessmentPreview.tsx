@@ -1,6 +1,6 @@
 // src/features/assessments/AssessmentPreview.tsx
 import { useForm, useWatch } from 'react-hook-form';
-import { Box, Button, FormControl, FormLabel, Input, Radio, RadioGroup, Stack, Textarea,VStack,Checkbox,CheckboxGroup } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Radio, RadioGroup, Stack, Textarea,VStack,Checkbox,CheckboxGroup,FormErrorMessage } from '@chakra-ui/react';
 import { type Question } from '../../api/db';
 
 export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
@@ -23,13 +23,13 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
 
           const validationRules = {
             required: q.validation?.required ? "This field is required" : false,
-            minLength: q.validation?.maxLength ? { value: q.validation.maxLength, message: `Max ${q.validation.maxLength} chars` } : undefined,
-            min: q.validation?.min ? { value: q.validation.min, message: `Min value is ${q.validation.min}` } : undefined,
-            max: q.validation?.max ? { value: q.validation.max, message: `Max value is ${q.validation.max}` } : undefined,
+            maxLength: q.validation?.maxLength ? { value: q.validation.maxLength, message: `Must be ${q.validation.maxLength} characters or less` } : undefined,
+            min: q.validation?.min !== undefined ? { value: q.validation.min, message: `Minimum value is ${q.validation.min}` } : undefined,
+            max: q.validation?.max !== undefined ? { value: q.validation.max, message: `Maximum value is ${q.validation.max}` } : undefined,
           };
 
           return (
-            <FormControl key={q.id} isInvalid={!!errors[q.id]}>
+            <FormControl key={q.id} isInvalid={!!errors[q.id]} isRequired={q.validation?.required}>
               <FormLabel htmlFor={q.id}>{q.label}</FormLabel>
               {q.type === 'short-text' && <Input id={q.id} {...register(q.id, validationRules)} />}
               {q.type === 'long-text' && <Textarea id={q.id} {...register(q.id, validationRules)} />}
@@ -53,10 +53,12 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
                 </CheckboxGroup>
               )}
               {q.type === 'file' && <Input type="file" id={q.id} isDisabled p={1} />}
+              {/* CORRECTED: Display the actual error message */}
+              <FormErrorMessage>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
             </FormControl>
           );
         })}
-        <Button type="submit" colorScheme="green">Submit Assessment</Button>
+        <Button type="submit" colorScheme="green" mt={4}>Submit Assessment</Button>
       </VStack>
     </form>
   );

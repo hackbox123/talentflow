@@ -33,7 +33,7 @@ export interface Question {
   };
   condition?: {
     questionId: string;
-    value: string;
+    value?: string;
   };
 }
 
@@ -58,13 +58,13 @@ class TalentFlowDB extends Dexie {
 
   constructor() {
     super('talentFlowDB'); // The name of our database
+    // this.version(1).stores({
+    //   // '++id' means auto-incrementing primary key
+    //   // 'order', 'status' are indexed fields for faster queries
+    //   jobs: '++id, title, slug, order, status',
+    //   candidates: '++id, name, email, jobId, stage',
+    // });
     this.version(1).stores({
-      // '++id' means auto-incrementing primary key
-      // 'order', 'status' are indexed fields for faster queries
-      jobs: '++id, title, slug, order, status',
-      candidates: '++id, name, email, jobId, stage',
-    });
-    this.version(2).stores({
       // ... existing stores from version 1 ...
       jobs: '++id, title, slug, order, status',
       candidates: '++id, name, email, jobId, stage',

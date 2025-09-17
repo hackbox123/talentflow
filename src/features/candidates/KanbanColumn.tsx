@@ -11,7 +11,13 @@ interface Props {
 }
 
 export const KanbanColumn = ({ stage, candidates }: Props) => {
-  const { setNodeRef } = useDroppable({ id: stage });
+  const { setNodeRef } = useDroppable({ 
+    id: stage,
+    data: {
+      type: 'container',
+      stage: stage,
+    }
+  });
 
   return (
     <Box
@@ -20,6 +26,7 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
       borderRadius="md"
       p={4}
       flex="1"
+      minW="300px" // Add min-width to prevent squishing
       minH="500px"
     >
       <Heading size="md" mb={4} textTransform="capitalize">{stage}</Heading>

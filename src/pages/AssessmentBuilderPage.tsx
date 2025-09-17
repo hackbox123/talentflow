@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Button, Grid, GridItem, Heading, Spinner, useToast, VStack, HStack } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { type Question } from '../api/db';
 import { AssessmentPreview } from '../features/assessments/AssessmentPreview';
 import { QuestionEditor } from '../features/assessments/QuestionEditor';
@@ -50,6 +52,18 @@ export default function AssessmentBuilderPage() {
     toast({ title: "Assessment saved!", status: 'success' });
   };
 
+  // NEW: Handler for reordering questions
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setQuestions((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   if (loading) return <Spinner />;
 
   return (
@@ -65,17 +79,22 @@ export default function AssessmentBuilderPage() {
         <Button onClick={() => addQuestion('single-choice')}>Add Single Choice</Button>
         <Button onClick={() => addQuestion('multi-choice')}>Add Multi Choice</Button>
         
-        <VStack align="stretch" spacing={4} mt={6}>
-          {questions.map(q => (
-            <QuestionEditor 
-              key={q.id} 
-              question={q} 
-              allQuestions={questions}
-              updateQuestion={updateQuestion}
-              removeQuestion={removeQuestion}
-            />
-          ))}
-        </VStack>
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
+            <VStack align="stretch" spacing={4} mt={6}>
+              {questions.map(q => (
+                // Note: QuestionEditor will need a small change to be draggable
+                <QuestionEditor 
+                  key={q.id} 
+                  question={q} 
+                  allQuestions={questions}
+                  updateQuestion={updateQuestion}
+                  removeQuestion={removeQuestion}
+                />
+              ))}
+            </VStack>
+          </SortableContext>
+        </DndContext>
       </GridItem>
       <GridItem p={6} bg="gray.50" borderRadius="md">
         <Heading size="lg" mb={6}>Live Preview</Heading>

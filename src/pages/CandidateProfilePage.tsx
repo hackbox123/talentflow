@@ -21,8 +21,14 @@ const CandidateProfilePage = () => {
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     setNote(text);
-    // Show suggestions if the user types '@'
-    if (text.endsWith('@')) {
+
+    // Find the word the cursor is currently on
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = text.slice(0, cursorPos);
+    const words = textBeforeCursor.split(/\s/);
+    const currentWord = words[words.length - 1];
+    // Show suggestions if the current word starts with '@'
+    if (currentWord.startsWith('@')) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -30,8 +36,11 @@ const CandidateProfilePage = () => {
   };
 
   const handleSuggestionClick = (name: string) => {
-    // Append the selected name and a space
-    setNote(prev => prev + name + ' ');
+    const cursorPos = note.lastIndexOf('@');
+    const textBeforeMention = note.slice(0, cursorPos);
+    
+    // Replace the partial @mention with the full name and a space
+    setNote(textBeforeMention + `@${name} `);
     setShowSuggestions(false);
   };
 
@@ -72,7 +81,12 @@ const CandidateProfilePage = () => {
       <Box>
         <Heading size="lg" mb={4}>Notes</Heading>
         {/* NEW: Popover for @mention suggestions */}
-        <Popover isOpen={showSuggestions} placement="top-start" isLazy>
+        <Popover 
+          isOpen={showSuggestions} 
+          onClose={() => setShowSuggestions(false)} // Close when clicking away
+          placement="top-start" 
+          isLazy
+        >
           <PopoverTrigger>
             <Textarea 
               placeholder="Add a note... Type @ to mention a user."

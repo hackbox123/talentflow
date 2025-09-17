@@ -1,233 +1,255 @@
-// src/pages/JobsPage.tsx
 import { useState, useEffect } from 'react';
 import {
-  Box, Heading, Text, Spinner, useDisclosure, Modal, ModalOverlay,
-  ModalContent, ModalHeader, ModalCloseButton, useToast, Button, HStack,Icon
+    Box, Heading, Text, Spinner, useToast, Button, HStack, Icon, Input, Select, VStack, Tag, TagLabel, TagCloseButton, Wrap, WrapItem
 } from '@chakra-ui/react';
 import { DragHandleIcon } from '@chakra-ui/icons';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { type Job } from '../api/db';
-import { JobForm } from '../features/jobs/JobForm';
-import { useNavigate } from 'react-router-dom'; // Ensure this path is correct
-import { Menu, MenuButton, MenuList, MenuOptionGroup, MenuItemOption } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
-
-// A single draggable job item
-function SortableJobItem({ job, onArchiveToggle,onClick }: { job: Job; onArchiveToggle: (job: Job) => void; onClick: () => void; }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: job.id! });
-  const style = { transform: CSS.Transform.toString(transform), transition };
-
-  return (
-    // The main div no longer has the listeners
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <HStack p={4} bg="white" borderWidth="1px" borderRadius="lg" mb={4} boxShadow="sm">
-        
-        {/* STEP 1: Create the Drag Handle */}
-        {/* The listeners are NOW ONLY on this icon */}
-        <Icon 
-          as={DragHandleIcon} 
-          cursor="grab" 
-          color="gray.500"
-          {...listeners} 
-        />
-        
-        <Box flex="1" onClick={onClick} cursor="pointer">
-          <Heading size="md">{job.title}</Heading>
-          <Text color="gray.600" fontSize="sm">Status: {job.status}</Text>
-        </Box>
-        
-        {/* STEP 2: The button's onClick can now be simplified */}
-        <Button 
-          size="sm" 
-          variant="outline" 
-          onClick={() => onArchiveToggle(job)}
-        >
-          {job.status === 'active' ? 'Archive' : 'Unarchive'}
-        </Button>
-
-      </HStack>
-    </div>
-  );
+function SortableJobItem({ job, onArchiveToggle, onClick, onEdit }: { job: Job; onArchiveToggle: (job: Job) => void; onClick: () => void; onEdit: () => void; }) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: job.id! });
+    const style = { transform: CSS.Transform.toString(transform), transition };
+    return (
+        <div ref={setNodeRef} style={style}>
+            <HStack p={4} bg="white" borderWidth="1px" borderRadius="lg" mb={4} boxShadow="sm">
+                <Icon as={DragHandleIcon} cursor="grab" color="gray.400" {...attributes} {...listeners} />
+                <Box flex="1" onClick={onClick} cursor="pointer">
+                    <Heading size="md">{job.title}</Heading>
+                    <Text color="gray.600" fontSize="sm">Status: {job.status}</Text>
+                    {job.tags && job.tags.length > 0 && (
+                        <HStack wrap="wrap" spacing={1} mt={2}>
+                            {job.tags.slice(0, 3).map(tag => (
+                                <Box
+                                    key={tag}
+                                    bg="blue.100"
+                                    color="blue.800"
+                                    px={2}
+                                    py={1}
+                                    borderRadius="sm"
+                                    fontSize="xs"
+                                    fontWeight="medium"
+                                >
+                                    {tag}
+                                </Box>
+                            ))}
+                            {job.tags.length > 3 && (
+                                <Text fontSize="xs" color="gray.500">
+                                    +{job.tags.length - 3} more
+                                </Text>
+                            )}
+                        </HStack>
+                    )}
+                </Box>
+                <Button size="sm" variant="ghost" onClick={onEdit}>Edit</Button>
+                <Button size="sm" variant="outline" onClick={() => onArchiveToggle(job)}>{job.status === 'active' ? 'Archive' : 'Unarchive'}</Button>
+            </HStack>
+        </div>
+    );
 }
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [editingJob, setEditingJob] = useState<Job | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const toast = useToast();
-  const navigate = useNavigate();
-
-  const [tagFilter, setTagFilter] = useState<string[]>([]); // NEW: State for tags
-  const ALL_TAGS = ['Full-time', 'Remote', 'Contract', 'Engineering']; // Example tags
-
-  useEffect(() => {
-    // Fetch initial jobs
-    const params = new URLSearchParams();
-    params.append('page', '1'); // Simplified for this example
-    if (tagFilter.length > 0) {
-      params.append('tags', tagFilter.join(','));
-    }
-    // ... add other filters like status and search ...
+    const [jobs, setJobs] = useState<Job[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const toast = useToast();
+    const navigate = useNavigate();
+    const [searchFilter, setSearchFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [tagFilter, setTagFilter] = useState<string[]>([]);
+    const [showTagPanel, setShowTagPanel] = useState(false);
+    const [tagSearch, setTagSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const PAGE_SIZE = 10;
     
-    fetch(`/jobs?${params.toString()}`).then(res => res.json()).then(data => {
-      setJobs(data.jobs);
-      setLoading(false);
-    });
-  }, [tagFilter]);
+    // Comprehensive tag list for filtering
+    const ALL_TAGS = [
+        // Seniority Level
+        'Intern / Co-op', 'Junior / Associate', 'Mid-level', 'Senior', 'Staff / Principal', 'Lead / Manager', 'Architect',
+        // Core Discipline
+        'Frontend Development', 'Backend Development', 'Full-Stack Development', 'Mobile Development', 'DevOps / SRE',
+        'Data Science', 'Data Engineering', 'Machine Learning / AI', 'QA / Test Automation', 'Cybersecurity',
+        'Product Management', 'UI/UX Design', 'Cloud Engineering',
+        // Programming Languages
+        'JavaScript', 'TypeScript', 'Python', 'Java', 'Go (Golang)', 'Rust', 'C#', 'Kotlin', 'Swift', 'PHP', 'Ruby',
+        // Frameworks & Libraries
+        'React.js', 'Node.js', 'Vue.js', 'Angular', 'Next.js', 'Django', 'Spring Boot', '.NET', 'Ruby on Rails',
+        'Express.js', 'FastAPI', 'TensorFlow / PyTorch',
+        // Platforms & Infrastructure
+        'AWS', 'Azure', 'GCP (Google Cloud)', 'Kubernetes', 'Docker', 'Terraform', 'iOS', 'Android', 'Linux',
+        // Databases
+        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Snowflake',
+        // Work Style & Logistics
+        'Full-time', 'Part-time', 'Contract / Freelance', 'Remote'
+    ];
 
-  const handleOpenModal = (job?: Job) => {
-    setEditingJob(job);
-    onOpen();
-  };
+    useEffect(() => {
+        const fetchJobs = async () => {
+            setIsLoading(true);
+            const params = new URLSearchParams();
+            params.append('page', currentPage.toString());
+            params.append('pageSize', PAGE_SIZE.toString());
+            if (searchFilter) params.append('search', searchFilter);
+            if (statusFilter) params.append('status', statusFilter);
+            if (tagFilter.length > 0) params.append('tags', tagFilter.join(','));
+            try {
+                const response = await fetch(`/jobs?${params.toString()}`);
+                const data = await response.json();
+                setJobs(data.jobs);
+                setTotalPages(Math.ceil(data.totalCount / PAGE_SIZE));
+            } catch (error) {
+                toast({ title: 'Failed to fetch jobs', status: 'error', isClosable: true });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchJobs();
+    }, [currentPage, searchFilter, statusFilter, tagFilter, toast]);
 
-  const handleCloseModal = () => {
-    setEditingJob(undefined);
-    onClose();
-  };
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchFilter, statusFilter, tagFilter]);
 
-  // --- LOGIC FOR CREATE/EDIT ---
-  const handleFormSubmit = async (formData: { title: string; slug: string; }) => {
-    setIsSubmitting(true);
-    const isEditing = !!editingJob;
-    const url = isEditing ? `/jobs/${editingJob.id}` : '/jobs';
-    const method = isEditing ? 'PATCH' : 'POST';
+    
 
-    // For a new job, calculate its order
-    const newJobData = isEditing ? formData : { ...formData, order: jobs.length };
+    const handleArchiveToggle = async (jobToToggle: Job) => {
+        const newStatus = jobToToggle.status === 'active' ? 'archived' : 'active';
+        const originalJobs = [...jobs];
+        setJobs(jobs.map(j => (j.id === jobToToggle.id ? { ...j, status: newStatus } : j)));
+        try {
+            const response = await fetch(`/jobs/${jobToToggle.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+            if (!response.ok) throw new Error('Server update failed.');
+        } catch (error) {
+            toast({ title: 'Update failed.', description: 'Could not update job status.', status: 'error', duration: 3000, isClosable: true });
+            setJobs(originalJobs);
+        }
+    };
 
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newJobData),
-      });
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const originalJobs = [...jobs];
+            const oldIndex = jobs.findIndex((j) => j.id === active.id);
+            const newIndex = jobs.findIndex((j) => j.id === over.id);
+            setJobs(arrayMove(jobs, oldIndex, newIndex));
+            try {
+                const response = await fetch(`/jobs/${active.id}/reorder`, { method: 'PATCH' });
+                if (!response.ok) throw new Error('Failed to reorder');
+            } catch (error) {
+                toast({ title: 'Error', description: "Couldn't save the new order. Reverting.", status: 'error', duration: 3000, isClosable: true, });
+                setJobs(originalJobs);
+            }
+        }
+    };
 
-      if (!response.ok) throw new Error('Failed to save the job.');
+    if (isLoading) return (<VStack justify="center" h="50vh"><Spinner size="xl" /></VStack>);
 
-      if (isEditing) {
-        // Update the job in the list
-        setJobs(jobs.map(j => (j.id === editingJob.id ? { ...j, ...formData } : j)));
-      } else {
-        // Add the new job to the list
-        const createdJob = await response.json();
-        setJobs(prevJobs => [...prevJobs, createdJob]);
-      }
-
-      toast({
-        title: `Job ${isEditing ? 'updated' : 'created'}.`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      handleCloseModal();
-
-    } catch (error) {
-      toast({
-        title: 'An error occurred.',
-        description: (error as Error).message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // --- LOGIC FOR ARCHIVE/UNARCHIVE ---
-  const handleArchiveToggle = async (jobToToggle: Job) => {
-    console.log('--- handleArchiveToggle called for job: ---', jobToToggle);
-    const newStatus = jobToToggle.status === 'active' ? 'archived' : 'active';
-    const originalJobs = [...jobs];
-
-    // Optimistic update: change the UI immediately
-    setJobs(jobs.map(j => (j.id === jobToToggle.id ? { ...j, status: newStatus } : j)));
-
-    try {
-      const response = await fetch(`/jobs/${jobToToggle.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) throw new Error('Server update failed.');
-
-    } catch (error) {
-      // If the API call fails, revert the change and show an error
-      toast({
-        title: 'Update failed.',
-        description: 'Could not update job status.',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      setJobs(originalJobs);
-    }
-  };
-
-  // --- LOGIC FOR DRAG AND DROP ---
-  const handleDragEnd = async (event: DragEndEvent) => {
-    // ... your existing handleDragEnd logic goes here ...
-  };
-
-  if (loading) return <Spinner />;
-
-  return (
-    <Box>
-      <HStack justify="space-between" mb={6}>
-        <Heading>Jobs Board</Heading>
-        <Button colorScheme="blue" onClick={() => handleOpenModal()}>Create Job</Button>
-      </HStack>
-      {/* Add filter UI controls here if you want */}
-
-      {/* NEW: Filter UI for Tags */}
-      <HStack mb={4}>
-        <Menu closeOnSelect={false}>
-          <MenuButton as={Button} colorScheme="gray">
-            Filter by Tags
-          </MenuButton>
-          <MenuList>
-            <MenuOptionGroup
-              title="Tags"
-              type="checkbox"
-              value={tagFilter}
-              onChange={(value) => setTagFilter(value as string[])}
-            >
-              {ALL_TAGS.map(tag => (
-                <MenuItemOption key={tag} value={tag}>{tag}</MenuItemOption>
-              ))}
-            </MenuOptionGroup>
-          </MenuList>
-        </Menu>
-      </HStack>
-      
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={jobs.map(j => j.id!)} strategy={verticalListSortingStrategy}>
-          {jobs.map((job) => (
-            <SortableJobItem key={job.id} job={job} onArchiveToggle={handleArchiveToggle} onClick={() => navigate(`/jobs/${job.id}`)} />
-          ))}
-        </SortableContext>
-      </DndContext>
-
-      {/* Create/Edit Modal */}
-      <Modal isOpen={isOpen} onClose={handleCloseModal}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{editingJob ? 'Edit Job' : 'Create New Job'}</ModalHeader>
-          <ModalCloseButton />
-          <JobForm
-            job={editingJob}
-            allJobs={jobs}
-            onSubmit={handleFormSubmit}
-            onCancel={handleCloseModal}
-            isLoading={isSubmitting}
-          />
-        </ModalContent>
-      </Modal>
-    </Box>
-  );
+    return (
+        <>
+        <Box>
+            <HStack justify="space-between" mb={6}>
+                <Heading>Jobs Board</Heading>
+                <Button colorScheme="blue" onClick={() => navigate('/jobs/new')}>Create Job</Button>
+            </HStack>
+            <HStack mb={6} spacing={4}>
+                <Input placeholder="Search title, slug, or tags..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} />
+                <Select placeholder="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                    <option value="active">Active</option>
+                    <option value="archived">Archived</option>
+                </Select>
+                <Button onClick={() => setShowTagPanel(v => !v)} variant="outline">
+                    {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
+                </Button>
+            </HStack>
+            {showTagPanel && (
+                <Box borderWidth="1px" borderRadius="lg" p={5} bg="white" mb={4} boxShadow="sm">
+                    <HStack justify="space-between" mb={3}>
+                        <Heading size="sm">Filter by Tags</Heading>
+                        <HStack>
+                            <Button size="sm" variant="ghost" onClick={() => setTagFilter([])}>Clear</Button>
+                            <Button size="sm" onClick={() => setShowTagPanel(false)}>Close</Button>
+                        </HStack>
+                    </HStack>
+                    <Text fontSize="sm" color="gray.600" mb={2}>Search and toggle tags to filter the jobs list.</Text>
+                    <Input
+                        placeholder="Search tags..."
+                        value={tagSearch}
+                        onChange={(e) => setTagSearch(e.target.value)}
+                        mb={3}
+                    />
+                    {tagFilter.length > 0 && (
+                        <Box mb={3}>
+                            <Text fontSize="sm" color="gray.700" mb={2}>Selected:</Text>
+                            <Wrap>
+                                {tagFilter.map(tag => (
+                                    <WrapItem key={tag}>
+                                        <Tag colorScheme="blue" borderRadius="full" size="sm">
+                                            <TagLabel>{tag}</TagLabel>
+                                            <TagCloseButton onClick={() => setTagFilter(prev => prev.filter(t => t !== tag))} />
+                                        </Tag>
+                                    </WrapItem>
+                                ))}
+                            </Wrap>
+                        </Box>
+                    )}
+                    <Box maxH="280px" overflowY="auto" pr={1}>
+                        <Wrap spacing={2}>
+                            {ALL_TAGS.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase()))
+                                .map(tag => {
+                                    const isSelected = tagFilter.includes(tag);
+                                    return (
+                                        <WrapItem key={tag}>
+                                            <Button
+                                                size="sm"
+                                                variant={isSelected ? 'solid' : 'outline'}
+                                                colorScheme="blue"
+                                                borderRadius="full"
+                                                onClick={() => setTagFilter(prev => isSelected ? prev.filter(t => t !== tag) : [...prev, tag])}
+                                            >
+                                                {tag}
+                                            </Button>
+                                        </WrapItem>
+                                    );
+                                })}
+                        </Wrap>
+                    </Box>
+                </Box>
+            )}
+            {jobs.length === 0 && (
+                <VStack py={20} spacing={4} borderWidth="1px" borderRadius="md" bg="white">
+                    <Heading size="md">No jobs found</Heading>
+                    <Text color="gray.600">Try adjusting search or filters.</Text>
+                    <HStack>
+                        <Button onClick={() => setSearchFilter('')}>Clear Search</Button>
+                        <Button onClick={() => setStatusFilter('')}>Clear Status</Button>
+                        <Button onClick={() => setTagFilter([])}>Clear Tags</Button>
+                    </HStack>
+                </VStack>
+            )}
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={jobs.map(j => j.id!)} strategy={verticalListSortingStrategy}>
+                    {jobs.map((job) => (
+                        <SortableJobItem
+                            key={job.id}
+                            job={job}
+                            onArchiveToggle={handleArchiveToggle}
+                            onClick={() => navigate(`/jobs/${job.id}`)}
+                            onEdit={() => navigate(`/jobs/${job.id}/edit`)}
+                        />
+                    ))}
+                </SortableContext>
+            </DndContext>
+            <HStack mt={6} justify="center">
+                <Button onClick={() => setCurrentPage(p => p - 1)} isDisabled={currentPage === 1}>Previous</Button>
+                <Text fontWeight="bold">Page {currentPage} of {totalPages}</Text>
+                <Button onClick={() => setCurrentPage(p => p + 1)} isDisabled={currentPage >= totalPages}>Next</Button>
+            </HStack>
+            </Box>
+            {/* Editor modal removed in favor of dedicated editor routes */}
+            </>
+        
+    );
 }

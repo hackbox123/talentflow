@@ -92,15 +92,46 @@ export const handlers = [
     return HttpResponse.json(updatedJob);
   }),
 
-  http.patch('/jobs/:id/reorder', async () => {
+  http.patch('/jobs/:id/reorder', async ({ request, params }) => {
     await delay(800);
     // Occasionally return a 500 error to test rollback
     if (Math.random() < 0.2) { // 20% failure rate for testing
       return new HttpResponse('Server error!', { status: 500 });
     }
 
-    // In a real app, you'd update the 'order' property in the DB here.
-    // For now, we'll just simulate success.
+    const { fromOrder, toOrder } = await request.json() as { fromOrder: number; toOrder: number };
+    
+    // Get all jobs and update their order values
+    const allJobs = await db.jobs.toArray();
+    
+    // Find the job being moved
+    const movedJob = allJobs.find(job => job.id === Number(params.id));
+    if (!movedJob) {
+      return new HttpResponse('Job not found', { status: 404 });
+    }
+    
+    // Update the order of the moved job
+    await db.jobs.update(Number(params.id), { order: toOrder });
+    
+    // Update orders of other jobs that were affected by the move
+    const jobsToUpdate = allJobs.filter(job => {
+      if (job.id === Number(params.id)) return false; // Skip the moved job
+      
+      if (fromOrder < toOrder) {
+        // Moving down: jobs between fromOrder and toOrder move up
+        return job.order > fromOrder && job.order <= toOrder;
+      } else {
+        // Moving up: jobs between toOrder and fromOrder move down
+        return job.order >= toOrder && job.order < fromOrder;
+      }
+    });
+    
+    // Update the affected jobs
+    for (const job of jobsToUpdate) {
+      const newOrder = fromOrder < toOrder ? job.order - 1 : job.order + 1;
+      await db.jobs.update(job.id!, { order: newOrder });
+    }
+    
     return HttpResponse.json({ success: true });
   }),
 
@@ -173,7 +204,9 @@ export const handlers = [
   // Get the structure of an assessment for a job
   http.get('/assessments/:jobId', async ({ params }) => {
     await delay(400);
+    console.log('API: Fetching assessment for jobId:', params.jobId);
     const assessment = await db.assessments.get(Number(params.jobId));
+    console.log('API: Assessment found:', assessment);
     return HttpResponse.json(assessment || null);
   }),
 

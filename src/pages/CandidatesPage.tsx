@@ -25,6 +25,7 @@ export default function CandidatesPage() {
   const [view, setView] = useState<'list' | 'kanban'>('list'); // Default to list view
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState(''); // Empty string means "All Stages"
+  const [kanbanCandidates, setKanbanCandidates] = useState<Candidate[]>([]);
 
   // Fetch candidates when the stage filter changes (applies to both views)
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function CandidatesPage() {
         if (!res.ok) throw new Error('Failed to fetch candidates');
         const data = await res.json();
         setAllCandidates(data);
+        setKanbanCandidates(data); // Initialize kanban candidates
       } catch (error) {
         console.error(error);
         // Handle error state if needed
@@ -54,6 +56,20 @@ export default function CandidatesPage() {
       c.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [allCandidates, searchTerm]);
+
+  // No need for separate kanban filtering - KanbanBoard will handle it internally
+
+  // Handle candidate changes from KanbanBoard
+  const handleKanbanCandidatesChange = (updatedCandidates: Candidate[]) => {
+    console.log('Parent received updated candidates:', updatedCandidates.length);
+    setKanbanCandidates(updatedCandidates);
+    setAllCandidates(updatedCandidates); // Also update the main list
+  };
+
+  // Update kanban candidates when allCandidates changes (from API fetch)
+  useEffect(() => {
+    setKanbanCandidates(allCandidates);
+  }, [allCandidates]);
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +160,12 @@ export default function CandidatesPage() {
           </Box>
         </Box>
       ) : (
-        <KanbanBoard initialCandidates={filteredCandidates} />
+        <KanbanBoard 
+          key={`kanban-${kanbanCandidates.length}-${searchTerm}`}
+          initialCandidates={kanbanCandidates} 
+          onCandidatesChange={handleKanbanCandidatesChange}
+          searchTerm={searchTerm}
+        />
       )}
     </Box>
   );

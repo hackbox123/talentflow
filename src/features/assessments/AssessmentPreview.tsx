@@ -1,25 +1,58 @@
 // src/features/assessments/AssessmentPreview.tsx
 import { useForm, useWatch } from 'react-hook-form';
-import { Box, Button, FormControl, FormLabel, Input, Radio, RadioGroup, Stack, Textarea,VStack,Checkbox,CheckboxGroup,FormErrorMessage } from '@chakra-ui/react';
+import { 
+  Button, FormControl, FormLabel, Input, Radio, RadioGroup, Stack, 
+  Textarea, VStack, Checkbox, CheckboxGroup, FormErrorMessage, Text 
+} from '@chakra-ui/react';
 import { type Question } from '../../api/db';
 
 export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
   const { register, handleSubmit, control, formState: { errors } } = useForm();
   const formValues = useWatch({ control });
 
-  const onSubmit = (data: any) => {
-    // This would call the POST /assessments/:jobId/submit endpoint
-    console.log('Form Responses:', data);
-    alert('Check the console for form responses!');
+  const onSubmit = async (data: any) => {
+    try {
+      // This would call the POST /assessments/:jobId/submit endpoint
+      const response = await fetch(`/assessments/${window.location.pathname.split('/')[2]}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          responses: data,
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to submit assessment');
+      
+      console.log('Form Responses:', data);
+      alert('Assessment submitted successfully!');
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Failed to submit assessment. Please try again.');
+    }
+  };
+
+  // Helper function to check if a question should be shown based on conditions
+  const shouldShowQuestion = (question: Question): boolean => {
+    if (!question.condition) return true;
+    
+    const { questionId, value } = question.condition;
+    const dependentValue = formValues[questionId];
+    
+    return dependentValue === value;
   };
 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <VStack spacing={6} align="stretch">
-        {questions.map(q => {
-          let shouldShow = !q.condition || formValues[q.condition.questionId] === q.condition.value;
-          if (!shouldShow) return null;
+        {questions.length === 0 ? (
+          <Text color="gray.500" textAlign="center" py={8}>
+            No questions added yet. Add questions in the editor to see the preview.
+          </Text>
+        ) : (
+          questions.map(q => {
+            if (!shouldShowQuestion(q)) return null;
 
           const validationRules = {
             required: q.validation?.required ? "This field is required" : false,
@@ -57,8 +90,11 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
               <FormErrorMessage>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
             </FormControl>
           );
-        })}
-        <Button type="submit" colorScheme="green" mt={4}>Submit Assessment</Button>
+          })
+        )}
+        {questions.length > 0 && (
+          <Button type="submit" colorScheme="green" mt={4}>Submit Assessment</Button>
+        )}
       </VStack>
     </form>
   );

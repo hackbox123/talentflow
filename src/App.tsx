@@ -8,6 +8,7 @@ import { Layout } from './components/Layout';
 import JobDetailPage from './pages/JobDetailPage';
 import CandidateProfilePage from './pages/CandidateProfilePage';
 import AssessmentBuilderPage from './pages/AssessmentBuilderPage';
+import CandidateAssessmentPage from './pages/CandidateAssessmentPage';
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path: "/candidates", element: <CandidatesPage /> },
       { path: "/candidates/:candidateId", element: <CandidateProfilePage /> },
       { path: "/jobs/:jobId/assessment", element: <AssessmentBuilderPage /> },
+      { path: "/jobs/:jobId/livepreview", element: <CandidateAssessmentPage /> },
     ],
   },
 ]);

@@ -20,13 +20,17 @@ const STAGES: Candidate['stage'][] = ['applied', 'screen', 'tech', 'offer', 'hir
 
 interface Props {
   initialCandidates: Candidate[];
+  onCandidatesChange?: (candidates: Candidate[]) => void;
+  searchTerm?: string;
 }
 
-export const KanbanBoard = ({ initialCandidates }: Props) => {
+export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm = '' }: Props) => {
   const [candidates, setCandidates] = useState(initialCandidates);
+  const [forceUpdate, setForceUpdate] = useState(0);
   
   // Update candidates when initialCandidates prop changes (for search filtering)
   useEffect(() => {
+    console.log('KanbanBoard received new initialCandidates:', initialCandidates.length);
     setCandidates(initialCandidates);
   }, [initialCandidates]);
   // State to hold the candidate being dragged, for the DragOverlay
@@ -43,14 +47,25 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
     })
   );
 
-  // Group candidates by stage using useMemo for performance
+  // Filter candidates by search term and group by stage
   const candidatesByStage = useMemo(() => {
+    console.log('Regenerating candidatesByStage with', candidates.length, 'candidates');
+    // First filter by search term if provided
+    const filteredCandidates = searchTerm 
+      ? candidates.filter(c => 
+          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : candidates;
+    
+    // Then group by stage
     const grouped: Record<string, Candidate[]> = {};
     STAGES.forEach(stage => {
-      grouped[stage] = candidates.filter(c => c.stage === stage);
+      grouped[stage] = filteredCandidates.filter(c => c.stage === stage);
+      console.log(`Stage ${stage}: ${grouped[stage].length} candidates`);
     });
     return grouped;
-  }, [candidates]);
+  }, [candidates, searchTerm, forceUpdate]);
 
 
   // Optimized drag-and-drop handler with useCallback
@@ -65,8 +80,9 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
     // 'over.id' could be a column (stage) or another card. We find the column.
     const newStage = over.data.current?.type === 'container' ? over.id : over.data.current?.sortable.containerId;
     
-    // The candidate that was dragged
-    const draggedCandidate = candidates.find(c => c.id === activeCandidateId)!;
+    // The candidate that was dragged - find in the full candidate list
+    const draggedCandidate = candidates.find(c => c.id === activeCandidateId);
+    if (!draggedCandidate) return;
     
     // If the stage hasn't changed, do nothing
     if (draggedCandidate.stage === newStage) return;
@@ -75,11 +91,17 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
     const originalCandidates = [...candidates];
     
     // 1. Immediately update the UI
-    setCandidates(prev => 
-      prev.map(c => 
-        c.id === activeCandidateId ? { ...c, stage: newStage } : c
-      )
+    const updatedCandidates = candidates.map(c => 
+      c.id === activeCandidateId ? { ...c, stage: newStage } : c
     );
+    console.log('Updating candidate:', draggedCandidate.name, 'to stage:', newStage);
+    setCandidates(updatedCandidates);
+    setForceUpdate(prev => prev + 1); // Force re-render
+    
+    // Notify parent component of the change
+    if (onCandidatesChange) {
+      onCandidatesChange(updatedCandidates);
+    }
 
     try {
       // 2. Make the API call
@@ -106,8 +128,13 @@ export const KanbanBoard = ({ initialCandidates }: Props) => {
         duration: 3000,
       });
       setCandidates(originalCandidates);
+      setForceUpdate(prev => prev + 1); // Force re-render on rollback
+      // Also notify parent to revert
+      if (onCandidatesChange) {
+        onCandidatesChange(originalCandidates);
+      }
     }
-  }, [candidates, toast]);
+  }, [candidates, toast, onCandidatesChange]);
 
   const handleDragStart = useCallback((event: any) => {
     // When dragging starts, find the candidate and set it as active

@@ -65,25 +65,22 @@ export default function JobsPage() {
     const [totalPages, setTotalPages] = useState(1);
     const PAGE_SIZE = 10;
     
-    // Comprehensive tag list for filtering
+    // Curated list of most commonly used tags
     const ALL_TAGS = [
         // Seniority Level
-        'Intern / Co-op', 'Junior / Associate', 'Mid-level', 'Senior', 'Staff / Principal', 'Lead / Manager', 'Architect',
+        'Junior', 'Mid-level', 'Senior', 'Lead', 'Manager',
         // Core Discipline
-        'Frontend Development', 'Backend Development', 'Full-Stack Development', 'Mobile Development', 'DevOps / SRE',
-        'Data Science', 'Data Engineering', 'Machine Learning / AI', 'QA / Test Automation', 'Cybersecurity',
-        'Product Management', 'UI/UX Design', 'Cloud Engineering',
+        'Frontend', 'Backend', 'Full-Stack', 'Mobile', 'DevOps', 'Data Science', 'QA', 'Product',
         // Programming Languages
-        'JavaScript', 'TypeScript', 'Python', 'Java', 'Go (Golang)', 'Rust', 'C#', 'Kotlin', 'Swift', 'PHP', 'Ruby',
+        'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'C#', 'Swift',
         // Frameworks & Libraries
-        'React.js', 'Node.js', 'Vue.js', 'Angular', 'Next.js', 'Django', 'Spring Boot', '.NET', 'Ruby on Rails',
-        'Express.js', 'FastAPI', 'TensorFlow / PyTorch',
+        'React', 'Node.js', 'Vue.js', 'Angular', 'Django', 'Spring Boot', '.NET',
         // Platforms & Infrastructure
-        'AWS', 'Azure', 'GCP (Google Cloud)', 'Kubernetes', 'Docker', 'Terraform', 'iOS', 'Android', 'Linux',
+        'AWS', 'Azure', 'Docker', 'Kubernetes', 'iOS', 'Android',
         // Databases
-        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Snowflake',
+        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis',
         // Work Style & Logistics
-        'Full-time', 'Part-time', 'Contract / Freelance', 'Remote'
+        'Full-time', 'Part-time', 'Contract', 'Remote'
     ];
 
     // Debounce search input
@@ -144,9 +141,18 @@ export default function JobsPage() {
             const originalJobs = [...jobs];
             const oldIndex = jobs.findIndex((j) => j.id === active.id);
             const newIndex = jobs.findIndex((j) => j.id === over.id);
+            
+            // Get the order values for the API call
+            const fromOrder = jobs[oldIndex].order;
+            const toOrder = jobs[newIndex].order;
+            
             setJobs(arrayMove(jobs, oldIndex, newIndex));
             try {
-                const response = await fetch(`/jobs/${active.id}/reorder`, { method: 'PATCH' });
+                const response = await fetch(`/jobs/${active.id}/reorder`, { 
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fromOrder, toOrder })
+                });
                 if (!response.ok) throw new Error('Failed to reorder');
             } catch (error) {
                 toast({ title: 'Error', description: "Couldn't save the new order. Reverting.", status: 'error', duration: 3000, isClosable: true, });
@@ -175,37 +181,83 @@ export default function JobsPage() {
                 </Button>
             </HStack>
             {showTagPanel && (
-                <Box borderWidth="1px" borderRadius="lg" p={5} bg="white" mb={4} boxShadow="sm">
-                    <HStack justify="space-between" mb={3}>
-                        <Heading size="sm">Filter by Tags</Heading>
-                        <HStack>
-                            <Button size="sm" variant="ghost" onClick={() => setTagFilter([])}>Clear</Button>
-                            <Button size="sm" onClick={() => setShowTagPanel(false)}>Close</Button>
+                <Box borderWidth="1px" borderRadius="xl" p={6} bg="white" mb={6} boxShadow="lg" borderColor="blue.100">
+                    <HStack justify="space-between" mb={4}>
+                        <VStack align="start" spacing={1}>
+                            <Heading size="md" color="gray.800">Filter by Tags</Heading>
+                            <Text fontSize="sm" color="gray.600">
+                                Select tags to filter jobs. {ALL_TAGS.length} tags available.
+                            </Text>
+                        </VStack>
+                        <HStack spacing={2}>
+                            <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                colorScheme="blue"
+                                onClick={() => setTagFilter([])}
+                                isDisabled={tagFilter.length === 0}
+                            >
+                                Clear All
+                            </Button>
+                            <Button 
+                                size="sm" 
+                                colorScheme="blue"
+                                onClick={() => setShowTagPanel(false)}
+                            >
+                                Done
+                            </Button>
                         </HStack>
                     </HStack>
-                    <Text fontSize="sm" color="gray.600" mb={2}>Search and toggle tags to filter the jobs list.</Text>
+                    
                     <Input
                         placeholder="Search tags..."
                         value={tagSearch}
                         onChange={(e) => setTagSearch(e.target.value)}
-                        mb={3}
+                        mb={4}
+                        size="md"
+                        borderColor="gray.300"
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
                     />
+                    
                     {tagFilter.length > 0 && (
-                        <Box mb={3}>
-                            <Text fontSize="sm" color="gray.700" mb={2}>Selected:</Text>
-                            <Wrap>
+                        <Box mb={4} p={3} bg="blue.50" borderRadius="lg" border="1px" borderColor="blue.200">
+                            <HStack justify="space-between" mb={2}>
+                                <Text fontSize="sm" fontWeight="medium" color="blue.700">
+                                    Selected Tags ({tagFilter.length})
+                                </Text>
+                                <Button
+                                    size="xs"
+                                    variant="ghost"
+                                    colorScheme="blue"
+                                    onClick={() => setTagFilter([])}
+                                >
+                                    Clear All
+                                </Button>
+                            </HStack>
+                            <Wrap spacing={2}>
                                 {tagFilter.map(tag => (
                                     <WrapItem key={tag}>
-                                        <Tag colorScheme="blue" borderRadius="full" size="sm">
+                                        <Tag 
+                                            colorScheme="blue" 
+                                            borderRadius="full" 
+                                            size="md"
+                                            bg="blue.500"
+                                            color="white"
+                                        >
                                             <TagLabel>{tag}</TagLabel>
-                                            <TagCloseButton onClick={() => setTagFilter(prev => prev.filter(t => t !== tag))} />
+                                            <TagCloseButton 
+                                                color="white"
+                                                _hover={{ bg: "blue.600" }}
+                                                onClick={() => setTagFilter(prev => prev.filter(t => t !== tag))} 
+                                            />
                                         </Tag>
                                     </WrapItem>
                                 ))}
                             </Wrap>
                         </Box>
                     )}
-                    <Box maxH="280px" overflowY="auto" pr={1}>
+                    
+                    <Box maxH="320px" overflowY="auto" pr={2}>
                         <Wrap spacing={2}>
                             {ALL_TAGS.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase()))
                                 .map(tag => {
@@ -217,6 +269,12 @@ export default function JobsPage() {
                                                 variant={isSelected ? 'solid' : 'outline'}
                                                 colorScheme="blue"
                                                 borderRadius="full"
+                                                fontWeight="medium"
+                                                _hover={{ 
+                                                    transform: "translateY(-1px)",
+                                                    boxShadow: "md"
+                                                }}
+                                                transition="all 0.2s"
                                                 onClick={() => setTagFilter(prev => isSelected ? prev.filter(t => t !== tag) : [...prev, tag])}
                                             >
                                                 {tag}
@@ -225,6 +283,13 @@ export default function JobsPage() {
                                     );
                                 })}
                         </Wrap>
+                        {ALL_TAGS.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase())).length === 0 && (
+                            <Box textAlign="center" py={8}>
+                                <Text color="gray.500" fontSize="sm">
+                                    No tags found matching "{tagSearch}"
+                                </Text>
+                            </Box>
+                        )}
                     </Box>
                 </Box>
             )}

@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
+import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import JobsPage from './pages/JobsPage';
+import CandidatesPage from './pages/CandidatesPage';
+import { Layout } from './components/Layout';
+import JobDetailPage from './pages/JobDetailPage';
+import CandidateProfilePage from './pages/CandidateProfilePage';
+import AssessmentBuilderPage from './pages/AssessmentBuilderPage';
+
+const config: ThemeConfig = {
+  initialColorMode: 'light',
+  useSystemColorMode: false,
+};
+const theme = extendTheme({ config });
+
+const router = createBrowserRouter([
+  {
+    element: <Layout><Outlet /></Layout>, // Wrap all pages in the Layout
+    children: [
+      { path: "/", element: <JobsPage /> },
+      { path: "/jobs", element: <JobsPage /> },
+      { path: "/jobs/:jobId", element: <JobDetailPage /> },
+      { path: "/candidates", element: <CandidatesPage /> },
+      { path: "/candidates/:candidateId", element: <CandidateProfilePage /> },
+      { path: "/jobs/:jobId/assessment", element: <AssessmentBuilderPage /> },
+    ],
+  },
+]);
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <ChakraProvider theme={theme}>
+      <RouterProvider router={router} />
+    </ChakraProvider>
+  );
 }
 
-export default App
+export default App;

@@ -56,6 +56,7 @@ export default function JobsPage() {
     const toast = useToast();
     const navigate = useNavigate();
     const [searchFilter, setSearchFilter] = useState('');
+    const [debouncedSearchFilter, setDebouncedSearchFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [tagFilter, setTagFilter] = useState<string[]>([]);
     const [showTagPanel, setShowTagPanel] = useState(false);
@@ -85,13 +86,22 @@ export default function JobsPage() {
         'Full-time', 'Part-time', 'Contract / Freelance', 'Remote'
     ];
 
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchFilter(searchFilter);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchFilter]);
+
     useEffect(() => {
         const fetchJobs = async () => {
             setIsLoading(true);
             const params = new URLSearchParams();
             params.append('page', currentPage.toString());
             params.append('pageSize', PAGE_SIZE.toString());
-            if (searchFilter) params.append('search', searchFilter);
+            if (debouncedSearchFilter) params.append('search', debouncedSearchFilter);
             if (statusFilter) params.append('status', statusFilter);
             if (tagFilter.length > 0) params.append('tags', tagFilter.join(','));
             try {
@@ -106,12 +116,12 @@ export default function JobsPage() {
             }
         };
         fetchJobs();
-    }, [currentPage, searchFilter, statusFilter, tagFilter, toast]);
+    }, [currentPage, debouncedSearchFilter, statusFilter, tagFilter, toast]);
 
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchFilter, statusFilter, tagFilter]);
+    }, [debouncedSearchFilter, statusFilter, tagFilter]);
 
     
 

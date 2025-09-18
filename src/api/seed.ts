@@ -9,25 +9,19 @@ const createSlug = (title: string) => {
 export async function seedDatabase() {
   const jobCount = await db.jobs.count();
   if (jobCount > 0) {
-    console.log("Database already seeded. Clearing and re-seeding...");
-    // Clear existing data to ensure fresh seed with specific jobs
-    await db.jobs.clear();
-    await db.candidates.clear();
-    await db.assessments.clear();
-    await db.assessmentResponses.clear();
+    console.log("Database already seeded. Skipping reseed.");
+    return;
   }
 
   console.log("Seeding database...");
 
   const jobsToSeed:Job[] = [];
-  
   // Create specific jobs for assessments
   const specificJobs = [
     { title: 'Senior React Developer', tags: ['React', 'TypeScript', 'Frontend', 'Senior'] },
     { title: 'Node.js Backend Engineer', tags: ['Node.js', 'Backend', 'JavaScript', 'API'] },
     { title: 'Engineering Manager', tags: ['Management', 'Leadership', 'Engineering', 'Senior'] },
   ];
-  
   for (let i = 0; i < specificJobs.length; i++) {
     const job = specificJobs[i];
     jobsToSeed.push({

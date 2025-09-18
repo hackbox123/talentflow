@@ -26,46 +26,47 @@ interface Props {
 
 export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm = '' }: Props) => {
   const [candidates, setCandidates] = useState(initialCandidates);
-  const [forceUpdate, setForceUpdate] = useState(0);
-  
   // Update candidates when initialCandidates prop changes (for search filtering)
   useEffect(() => {
-    console.log('KanbanBoard received new initialCandidates:', initialCandidates.length);
     setCandidates(initialCandidates);
   }, [initialCandidates]);
   // State to hold the candidate being dragged, for the DragOverlay
   const [activeCandidate, setActiveCandidate] = useState<Candidate | null>(null);
   const toast = useToast();
 
-  // Optimized sensors for smoother DnD
+  // Optimized sensors with better drag detection and reduced sensitivity
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 }, // prevent accidental drags
+      activationConstraint: { 
+        distance: 5, // Reduced activation distance for faster response
+        delay: 0 // No delay in drag start
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
+      keyboardCodes: {
+        start: ['Space'],
+        cancel: ['Escape'],
+        end: ['Space']
+      }
     })
   );
 
-  // Filter candidates by search term and group by stage
+  // Optimized filtering and grouping with memoization
   const candidatesByStage = useMemo(() => {
-    console.log('Regenerating candidatesByStage with', candidates.length, 'candidates');
-    // First filter by search term if provided
+    const searchTermLower = searchTerm.toLowerCase();
     const filteredCandidates = searchTerm 
       ? candidates.filter(c => 
-          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          c.email.toLowerCase().includes(searchTerm.toLowerCase())
+          c.name.toLowerCase().includes(searchTermLower) ||
+          c.email.toLowerCase().includes(searchTermLower)
         )
       : candidates;
     
-    // Then group by stage
-    const grouped: Record<string, Candidate[]> = {};
-    STAGES.forEach(stage => {
+    return STAGES.reduce((grouped, stage) => {
       grouped[stage] = filteredCandidates.filter(c => c.stage === stage);
-      console.log(`Stage ${stage}: ${grouped[stage].length} candidates`);
-    });
-    return grouped;
-  }, [candidates, searchTerm, forceUpdate]);
+      return grouped;
+    }, {} as Record<string, Candidate[]>);
+  }, [candidates, searchTerm]);
 
 
   // Optimized drag-and-drop handler with useCallback
@@ -77,8 +78,30 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
     if (!over) return;
     
     const activeCandidateId = active.id;
-    // 'over.id' could be a column (stage) or another card. We find the column.
-    const newStage = over.data.current?.type === 'container' ? over.id : over.data.current?.sortable.containerId;
+    // Determine the destination stage robustly with multiple fallbacks
+    let newStage: any = undefined;
+    const overData = over.data?.current as any;
+    // 1) If dropping over a column container
+    if (overData && overData.type === 'container') {
+      newStage = over.id;
+    }
+    // 2) If dropping over a card inside a column
+    if (!newStage && overData && overData.sortable && overData.sortable.containerId) {
+      newStage = overData.sortable.containerId;
+    }
+    // 3) Fallback: sometimes stage is stored on data
+    if (!newStage && overData && overData.stage) {
+      newStage = overData.stage;
+    }
+    // 4) Final fallback: if over.id is a known stage string
+    if (!newStage && typeof over.id === 'string') {
+      newStage = over.id;
+    }
+    // Validate stage
+    if (!STAGES.includes(newStage)) {
+      // Invalid target; ignore the drop
+      return;
+    }
     
     // The candidate that was dragged - find in the full candidate list
     const draggedCandidate = candidates.find(c => c.id === activeCandidateId);
@@ -87,16 +110,12 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
     // If the stage hasn't changed, do nothing
     if (draggedCandidate.stage === newStage) return;
 
-    // --- OPTIMISTIC UPDATE ---
+    // Optimistic update with minimal re-renders
     const originalCandidates = [...candidates];
-    
-    // 1. Immediately update the UI
     const updatedCandidates = candidates.map(c => 
       c.id === activeCandidateId ? { ...c, stage: newStage } : c
     );
-    console.log('Updating candidate:', draggedCandidate.name, 'to stage:', newStage);
     setCandidates(updatedCandidates);
-    setForceUpdate(prev => prev + 1); // Force re-render
     
     // Notify parent component of the change
     if (onCandidatesChange) {
@@ -128,7 +147,6 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
         duration: 3000,
       });
       setCandidates(originalCandidates);
-      setForceUpdate(prev => prev + 1); // Force re-render on rollback
       // Also notify parent to revert
       if (onCandidatesChange) {
         onCandidatesChange(originalCandidates);
@@ -137,12 +155,12 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
   }, [candidates, toast, onCandidatesChange]);
 
   const handleDragStart = useCallback((event: any) => {
-    // When dragging starts, find the candidate and set it as active
     const candidate = event.active.data.current?.candidate;
-    if (candidate) {
-      setActiveCandidate(candidate);
-    }
+    if (candidate) setActiveCandidate(candidate);
   }, []);
+
+  // When dropping over another card, ensure the `over` carries a container id
+  // dnd-kit provides it via over.data.current.sortable.containerId when SortableContext has an id
 
   return (
     <DndContext

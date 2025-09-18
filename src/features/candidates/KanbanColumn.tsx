@@ -34,8 +34,8 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
       <Heading size="sm" mb={4} textTransform="capitalize" color="gray.700">
         {stage} ({candidates.length})
       </Heading>
-      {/* This makes all cards within the column sortable */}
-      <SortableContext items={candidates.map(c => c.id!)} strategy={verticalListSortingStrategy}>
+      {/* This makes all cards within the column sortable. Provide an id so containerId is available. */}
+      <SortableContext id={stage} items={candidates.map(c => c.id!)} strategy={verticalListSortingStrategy}>
         {candidates.length > 0 ? (
           candidates.map(candidate => (
             <CandidateCard key={candidate.id} candidate={candidate} />

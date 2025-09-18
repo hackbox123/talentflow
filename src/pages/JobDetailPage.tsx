@@ -3,14 +3,15 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Box, Heading, Spinner, Text, VStack, HStack, Badge, Button, 
-  Divider, Tag, TagLabel, Wrap, WrapItem, useToast 
+  Divider, Tag, TagLabel, Wrap, WrapItem, useToast, Kbd, List, ListItem 
 } from '@chakra-ui/react';
 import { ArrowBackIcon, EditIcon } from '@chakra-ui/icons';
-import { type Job } from '../api/db';
+import { type Job, type Candidate } from '../api/db';
 
 const JobDetailPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [job, setJob] = useState<Job | null>(null);
+  const [applicants, setApplicants] = useState<Candidate[] | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const toast = useToast();
@@ -22,6 +23,14 @@ const JobDetailPage = () => {
         if (!response.ok) throw new Error('Job not found');
         const data = await response.json();
         setJob(data);
+        // fetch applicants for this job
+        try {
+          const candRes = await fetch(`/candidates?jobId=${data.id}`);
+          if (candRes.ok) {
+            const candidates = await candRes.json();
+            setApplicants(candidates);
+          }
+        } catch {}
       } catch (error) {
         toast({
           title: 'Error',
@@ -69,6 +78,11 @@ const JobDetailPage = () => {
         
         <Text color="gray.600" fontSize="lg" mb={6}>
           Job ID: {job.id} • Slug: {job.slug}
+          {applicants !== null && (
+            <>
+              {' '}• Applicants: <Kbd>{applicants.length}</Kbd>
+            </>
+          )}
         </Text>
 
         <Box mb={6}>
@@ -114,6 +128,38 @@ const JobDetailPage = () => {
               Preview Assessment
             </Button>
           </HStack>
+        </VStack>
+
+        <Divider my={6} />
+
+        <VStack spacing={3} align="stretch">
+          <HStack justify="space-between">
+            <Heading size="md">Applicants</Heading>
+            {applicants !== null && (
+              <Badge colorScheme="purple" borderRadius="full" px={2}>{applicants.length}</Badge>
+            )}
+          </HStack>
+          {applicants === null ? (
+            <Spinner />
+          ) : applicants.length === 0 ? (
+            <Text color="gray.500">No applicants yet.</Text>
+          ) : (
+            <List spacing={2}>
+              {applicants.map(c => (
+                <ListItem key={c.id}>
+                  <HStack justify="space-between" p={3} borderWidth="1px" borderColor="gray.100" borderRadius="md">
+                    <VStack align="start" spacing={0}>
+                      <Button as={Link} to={`/candidates/${c.id}`} variant="link" colorScheme="blue">
+                        {c.name}
+                      </Button>
+                      <Text fontSize="sm" color="gray.600">{c.email}</Text>
+                    </VStack>
+                    <Badge colorScheme={c.stage === 'hired' ? 'green' : c.stage === 'rejected' ? 'red' : 'blue'}>{c.stage}</Badge>
+                  </HStack>
+                </ListItem>
+              ))}
+            </List>
+          )}
         </VStack>
       </Box>
     </VStack>

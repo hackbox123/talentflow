@@ -8,6 +8,7 @@ import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import { type Job } from '../api/db';
 import { useNavigate } from 'react-router-dom';
+import { FiTag } from "react-icons/fi";
 
 function SortableJobItem({ job, onArchiveToggle, onClick, onEdit }: { job: Job; onArchiveToggle: (job: Job) => void; onClick: () => void; onEdit: () => void; }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: job.id! });
@@ -176,9 +177,29 @@ export default function JobsPage() {
                     <option value="active">Active</option>
                     <option value="archived">Archived</option>
                 </Select>
-                <Button onClick={() => setShowTagPanel(v => !v)} variant="outline">
-                    {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
-                </Button>
+                    <Button
+                        onClick={() => setShowTagPanel(v => !v)}
+                        leftIcon={<FiTag />}
+                        bg="blue.500"
+                        color="white"
+                        fontWeight="medium"
+                        borderRadius="md"
+                        px={8}
+                        py={3}
+                        boxShadow="md"
+                        _hover={{
+                            bg: "blue.600",
+                            transform: "translateY(-2px)",
+                            boxShadow: "lg",
+                        }}
+                        _active={{
+                            bg: "blue.700",
+                            transform: "scale(0.98)",
+                        }}
+                        transition="all 0.2s ease-in-out"
+                    >
+                        {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
+                    </Button>
             </HStack>
             {showTagPanel && (
                 <Box borderWidth="1px" borderRadius="xl" p={6} bg="white" mb={6} boxShadow="lg" borderColor="blue.100">

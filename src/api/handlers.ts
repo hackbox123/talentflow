@@ -139,6 +139,7 @@ export const handlers = [
   http.get('/candidates', async ({ request }) => {
     await delay(400);
     const url = new URL(request.url);
+    const jobIdParam = url.searchParams.get('jobId');
     const stage = url.searchParams.get('stage');
     const search = url.searchParams.get('search');
     const page = parseInt(url.searchParams.get('page') || '1');
@@ -146,6 +147,10 @@ export const handlers = [
 
     let candidates = await db.candidates.toArray();
 
+    if (jobIdParam) {
+      const jobId = Number(jobIdParam);
+      candidates = candidates.filter(c => c.jobId === jobId);
+    }
     if (stage) {
       candidates = candidates.filter(c => c.stage === stage);
     }

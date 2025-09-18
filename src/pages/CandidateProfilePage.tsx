@@ -1,8 +1,9 @@
 // src/pages/CandidateProfilePage.tsx
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Heading, Spinner, Text, VStack, Textarea, List, ListItem } from '@chakra-ui/react';
-import { type Candidate } from '../api/db';
+import { Box, Heading, Spinner, Text, VStack, Textarea, List, ListItem, HStack, Tag, TagLabel, Button } from '@chakra-ui/react';
+import { type Candidate, type Job } from '../api/db';
+import { Link as RouterLink } from 'react-router-dom';
 
 // Hardcoded list of users for mentions
 const MENTION_SUGGESTIONS = [
@@ -16,6 +17,7 @@ const MENTION_SUGGESTIONS = [
 const CandidateProfilePage = () => {
   const { candidateId } = useParams<{ candidateId: string }>();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
+  const [job, setJob] = useState<Job | null>(null);
   const [timeline, setTimeline] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [note, setNote] = useState('');
@@ -80,9 +82,18 @@ const CandidateProfilePage = () => {
     Promise.all([
       fetch(`/candidates/${candidateId}`).then(res => res.json()),
       fetch(`/candidates/${candidateId}/timeline`).then(res => res.json())
-    ]).then(([candidateData, timelineData]) => {
+    ]).then(async ([candidateData, timelineData]) => {
       setCandidate(candidateData);
       setTimeline(timelineData);
+      if (candidateData?.jobId) {
+        try {
+          const jobRes = await fetch(`/jobs/${candidateData.jobId}`);
+          if (jobRes.ok) {
+            const jobData = await jobRes.json();
+            setJob(jobData);
+          }
+        } catch {}
+      }
       setLoading(false);
     });
   }, [candidateId]);
@@ -96,6 +107,23 @@ const CandidateProfilePage = () => {
         <Heading>{candidate.name}</Heading>
         <Text>{candidate.email}</Text>
         <Text>Status: {candidate.stage}</Text>
+        {job && (
+          <Box mt={3}>
+            <HStack spacing={3} align="center">
+              <Text color="gray.600">Applied for:</Text>
+              <Button as={RouterLink} to={`/jobs/${job.id}`} size="sm" variant="link" colorScheme="blue">
+                {job.title}
+              </Button>
+              <HStack spacing={1}>
+                {job.tags.slice(0, 3).map(t => (
+                  <Tag key={t} size="sm" colorScheme="blue" variant="subtle">
+                    <TagLabel>{t}</TagLabel>
+                  </Tag>
+                ))}
+              </HStack>
+            </HStack>
+          </Box>
+        )}
       </Box>
       
       <Box>

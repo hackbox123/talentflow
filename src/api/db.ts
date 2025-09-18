@@ -18,7 +18,15 @@ export interface Candidate {
   stage: 'applied' | 'screen' | 'tech' | 'offer' | 'hired' | 'rejected';
 }
 
-// We will define Assessment and Timeline later
+export interface Timeline {
+  id?: number;
+  candidateId: number;
+  date: string;
+  event: string;
+  stage?: 'applied' | 'screen' | 'tech' | 'offer' | 'hired' | 'rejected';
+  notes?: string;
+  userId?: string;
+}
 
 export interface Question {
   id: string; // e.g., 'q1', 'q2'
@@ -53,23 +61,18 @@ export interface AssessmentResponse {
 class TalentFlowDB extends Dexie {
   jobs!: Table<Job>;
   candidates!: Table<Candidate>;
-  assessments!: Table<Assessment, number>; // Primary key is jobId
+  assessments!: Table<Assessment, number>;
   assessmentResponses!: Table<AssessmentResponse>;
+  timeline!: Table<Timeline>;
 
   constructor() {
-    super('talentFlowDB'); // The name of our database
-    // this.version(1).stores({
-    //   // '++id' means auto-incrementing primary key
-    //   // 'order', 'status' are indexed fields for faster queries
-    //   jobs: '++id, title, slug, order, status',
-    //   candidates: '++id, name, email, jobId, stage',
-    // });
-    this.version(1).stores({
-      // ... existing stores from version 1 ...
+    super('talentFlowDB');
+    this.version(2).stores({
       jobs: '++id, title, slug, order, status',
       candidates: '++id, name, email, jobId, stage',
-      assessments: 'jobId', // jobId is the primary key
+      assessments: 'jobId',
       assessmentResponses: '++id, candidateId, assessmentId',
+      timeline: '++id, candidateId, date, stage'
     });
   }
 }

@@ -2,8 +2,32 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Heading, Spinner, Text, VStack, Textarea, List, ListItem, HStack, Tag, TagLabel, Button } from '@chakra-ui/react';
-import { type Candidate, type Job } from '../api/db';
+import { type Candidate, type Job, type Timeline } from '../api/db';
 import { Link as RouterLink } from 'react-router-dom';
+
+function getStageColor(stage?: string): string {
+  switch (stage) {
+    case 'applied': return 'blue.500';
+    case 'screen': return 'purple.500';
+    case 'tech': return 'orange.500';
+    case 'offer': return 'green.500';
+    case 'hired': return 'teal.500';
+    case 'rejected': return 'red.500';
+    default: return 'gray.500';
+  }
+}
+
+function getStageColorScheme(stage?: string): string {
+  switch (stage) {
+    case 'applied': return 'blue';
+    case 'screen': return 'purple';
+    case 'tech': return 'orange';
+    case 'offer': return 'green';
+    case 'hired': return 'teal';
+    case 'rejected': return 'red';
+    default: return 'gray';
+  }
+}
 
 // Hardcoded list of users for mentions
 const MENTION_SUGGESTIONS = [
@@ -79,23 +103,38 @@ const CandidateProfilePage = () => {
   );
 
   useEffect(() => {
-    Promise.all([
-      fetch(`/candidates/${candidateId}`).then(res => res.json()),
-      fetch(`/candidates/${candidateId}/timeline`).then(res => res.json())
-    ]).then(async ([candidateData, timelineData]) => {
-      setCandidate(candidateData);
-      setTimeline(timelineData);
-      if (candidateData?.jobId) {
-        try {
-          const jobRes = await fetch(`/jobs/${candidateData.jobId}`);
-          if (jobRes.ok) {
-            const jobData = await jobRes.json();
-            setJob(jobData);
-          }
-        } catch {}
+    const initializeData = async () => {
+      try {
+        // First, ensure timeline is initialized for all candidates
+        await fetch('/candidates/initialize-timeline', { method: 'POST' });
+        
+        // Then fetch candidate data
+        const [candidateData, timelineData] = await Promise.all([
+          fetch(`/candidates/${candidateId}`).then(res => res.json()),
+          fetch(`/candidates/${candidateId}/timeline`).then(res => res.json())
+        ]);
+
+        setCandidate(candidateData);
+        setTimeline(timelineData);
+
+        // Fetch associated job data if available
+        if (candidateData?.jobId) {
+          try {
+            const jobRes = await fetch(`/jobs/${candidateData.jobId}`);
+            if (jobRes.ok) {
+              const jobData = await jobRes.json();
+              setJob(jobData);
+            }
+          } catch {}
+        }
+      } catch (error) {
+        console.error('Error initializing data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initializeData();
   }, [candidateId]);
   
   if (loading) return <Spinner />;
@@ -130,11 +169,31 @@ const CandidateProfilePage = () => {
         <Heading size="lg" mb={4}>Timeline</Heading>
         <List spacing={3}>
           {timeline.map((item, index) => (
-            <ListItem key={index}>
-              <Text fontWeight="bold">{item.event} - {new Date(item.date).toLocaleDateString()}</Text>
-              <Text fontSize="sm" color="gray.600">{item.notes}</Text>
+            <ListItem key={index} display="flex" alignItems="flex-start" p={3} borderLeft="4px solid" 
+              borderLeftColor={getStageColor(item.stage)}
+              bg="gray.50"
+              borderRadius="md"
+              mb={2}
+            >
+              <Box flex={1}>
+                <HStack spacing={2} mb={1}>
+                  <Text fontWeight="bold">{item.event}</Text>
+                  <Tag size="sm" colorScheme={getStageColorScheme(item.stage)}>
+                    {item.stage}
+                  </Tag>
+                </HStack>
+                <Text fontSize="sm" color="gray.600" mb={1}>
+                  {new Date(item.date).toLocaleString()}
+                </Text>
+                {item.notes && (
+                  <Text fontSize="sm" color="gray.700">{item.notes}</Text>
+                )}
+              </Box>
             </ListItem>
           ))}
+          {timeline.length === 0 && (
+            <Text color="gray.500" fontSize="sm">No timeline events yet.</Text>
+          )}
         </List>
       </Box>
 

@@ -1,8 +1,33 @@
 // src/api/handlers.ts
 import { http, HttpResponse, delay } from 'msw';
 import { db } from './db';
-import { type Job } from './db';
+import { type Job, type Timeline } from './db';
 import { type Assessment, type AssessmentResponse } from './db';
+
+// Helper functions for stage changes
+function getStageChangeMessage(stage: string): string {
+  switch (stage) {
+    case 'applied': return 'Application Received';
+    case 'screen': return 'Moved to Screening';
+    case 'tech': return 'Started Technical Assessment';
+    case 'offer': return 'Offer Extended';
+    case 'hired': return 'Candidate Hired';
+    case 'rejected': return 'Application Closed';
+    default: return `Moved to ${stage}`;
+  }
+}
+
+function getStageNotes(stage: string): string {
+  switch (stage) {
+    case 'applied': return 'Candidate submitted their application';
+    case 'screen': return 'Candidate moved to initial screening phase';
+    case 'tech': return 'Candidate progressed to technical evaluation';
+    case 'offer': return 'Offer letter being prepared';
+    case 'hired': return 'Candidate accepted the offer and completed onboarding';
+    case 'rejected': return 'Application process concluded';
+    default: return '';
+  }
+}
 
 export const handlers = [
   // Handler for GET /jobs
@@ -136,6 +161,38 @@ export const handlers = [
   }),
 
   // candidates handlers
+  // Initialize timeline for all candidates that don't have one
+  http.post('/candidates/initialize-timeline', async () => {
+    await delay(1000);
+    
+    const candidates = await db.candidates.toArray();
+    let initialized = 0;
+
+    await db.transaction('rw', [db.timeline], async () => {
+      for (const candidate of candidates) {
+        // Check if candidate already has timeline entries
+        const existingEntries = await db.timeline
+          .where('candidateId')
+          .equals(candidate.id!)
+          .count();
+
+        if (existingEntries === 0) {
+          // Create initial timeline entry
+          await db.timeline.add({
+            candidateId: candidate.id!,
+            date: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
+            event: getStageChangeMessage(candidate.stage),
+            stage: candidate.stage,
+            notes: `Initial stage: ${candidate.stage}`
+          });
+          initialized++;
+        }
+      }
+    });
+
+    return HttpResponse.json({ success: true, initialized });
+  }),
+
   http.get('/candidates', async ({ request }) => {
     await delay(400);
     const url = new URL(request.url);
@@ -167,7 +224,7 @@ export const handlers = [
     return HttpResponse.json(paginatedCandidates);
   }),
 
-  // NEW: Handler to create a candidate
+  // Handler to create a candidate with initial timeline entry
   http.post('/candidates', async ({ request }) => {
     await delay(500);
     if (Math.random() < 0.1) return new HttpResponse('Server Error', { status: 500 });
@@ -175,11 +232,29 @@ export const handlers = [
     const newCandidateData = await request.json() as any;
     const newCandidate = {
       ...newCandidateData,
-      stage: 'applied', // Default to 'applied' stage
+      stage: newCandidateData.stage || 'applied', // Use provided stage or default to 'applied'
     };
     
-    const id = await db.candidates.add(newCandidate);
-    return HttpResponse.json({ ...newCandidate, id }, { status: 201 });
+    let result;
+    
+    // Use transaction to ensure both operations succeed
+    await db.transaction('rw', [db.candidates, db.timeline], async () => {
+      // First create the candidate
+      const candidateId = await db.candidates.add(newCandidate);
+      
+      // Then create the timeline entry
+      await db.timeline.add({
+        candidateId,
+        date: new Date().toISOString(),
+        event: getStageChangeMessage(newCandidate.stage),
+        stage: newCandidate.stage,
+        notes: getStageNotes(newCandidate.stage)
+      });
+      
+      result = { ...newCandidate, id: candidateId };
+    });
+
+    return HttpResponse.json(result, { status: 201 });
   }),
   http.get('/candidates/:id', async ({ params }) => {
     await delay(300);
@@ -188,21 +263,65 @@ export const handlers = [
   }),
   http.get('/candidates/:id/timeline', async ({ params }) => {
     await delay(500);
-    // Simulate a timeline for a candidate
-    return HttpResponse.json([
-      { event: 'Applied', date: '2025-09-10T10:00:00Z', notes: 'Applied via company website.' },
-      { event: 'Moved to Screen', date: '2025-09-11T14:30:00Z', notes: 'Passed initial resume screen.' },
-      { event: 'Moved to Tech', date: '2025-09-14T11:00:00Z', notes: 'Scheduled for technical interview.' },
+    const candidateId = Number(params.id);
+    
+    // Check if candidate exists and has any timeline entries
+    const [candidate, existingTimeline] = await Promise.all([
+      db.candidates.get(candidateId),
+      db.timeline.where('candidateId').equals(candidateId).toArray()
     ]);
+
+    // If candidate exists but has no timeline, create initial entry
+    if (candidate && existingTimeline.length === 0) {
+      const initialEntry: Timeline = {
+        candidateId,
+        date: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
+        event: getStageChangeMessage(candidate.stage),
+        stage: candidate.stage,
+        notes: `Initial stage: ${candidate.stage}`
+      };
+      await db.timeline.add(initialEntry);
+      existingTimeline.push(initialEntry);
+    }
+
+    // Sort timeline by date in reverse order (newest first)
+    return HttpResponse.json(
+      existingTimeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    );
   }),
   http.patch('/candidates/:id', async ({ request, params }) => {
     await delay(600);
     if (Math.random() < 0.1) {
       return new HttpResponse('Server error', { status: 500 });
     }
+    
     const { id } = params;
     const { stage } = await request.json() as any;
-    await db.candidates.update(Number(id), { stage });
+    
+    // Get the current candidate to compare stages
+    const currentCandidate = await db.candidates.get(Number(id));
+    if (!currentCandidate) {
+      return new HttpResponse('Candidate not found', { status: 404 });
+    }
+
+    // Only create timeline entry if stage actually changed
+    if (currentCandidate.stage !== stage) {
+      // Create timeline entry
+      const timelineEntry: Timeline = {
+        candidateId: Number(id),
+        date: new Date().toISOString(),
+        event: getStageChangeMessage(stage),
+        stage: stage,
+        notes: getStageNotes(stage)
+      };
+      
+      // Update candidate and add timeline entry in transaction
+      await db.transaction('rw', [db.candidates, db.timeline], async () => {
+        await db.candidates.update(Number(id), { stage });
+        await db.timeline.add(timelineEntry);
+      });
+    }
+
     return HttpResponse.json({ success: true });
   }),
 

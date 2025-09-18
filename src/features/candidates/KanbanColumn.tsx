@@ -4,6 +4,10 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core';
 import { type Candidate } from '../../api/db';
 import { CandidateCard } from './CandidateCard';
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+
 
 interface Props {
   stage: string;
@@ -11,13 +15,32 @@ interface Props {
 }
 
 export const KanbanColumn = ({ stage, candidates }: Props) => {
-  const { setNodeRef } = useDroppable({ 
+  // Height of each card (adjust as needed)
+  const CARD_HEIGHT = 100;
+  // Height of the column (adjust as needed)
+  const COLUMN_HEIGHT = 500;
+  const parentRef = useRef<HTMLDivElement>(null);
+
+
+
+  // Set up the virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: candidates.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => CARD_HEIGHT,
+    overscan: 5,
+  });
+  const { setNodeRef } = useDroppable({
     id: stage,
     data: {
       type: 'container',
       stage: stage,
-    }
+    },
   });
+
+
+
+
 
   return (
     <Box
@@ -26,20 +49,43 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
       borderRadius="lg"
       p={4}
       flex="1"
-      minW="300px" // Add min-width to prevent squishing
-      minH="500px"
+      minW="300px"
+      minH={`${COLUMN_HEIGHT}px`}
       borderWidth="1px"
       borderColor="gray.200"
     >
       <Heading size="sm" mb={4} textTransform="capitalize" color="gray.700">
         {stage} ({candidates.length})
       </Heading>
-      {/* This makes all cards within the column sortable. Provide an id so containerId is available. */}
       <SortableContext id={stage} items={candidates.map(c => c.id!)} strategy={verticalListSortingStrategy}>
         {candidates.length > 0 ? (
-          candidates.map(candidate => (
-            <CandidateCard key={candidate.id} candidate={candidate} />
-          ))
+          <Box
+            ref={parentRef}
+            height={`${COLUMN_HEIGHT}px`}
+            width="100%"
+            overflowY="auto"
+            position="relative"
+          >
+            <Box height={`${rowVirtualizer.getTotalSize()}px`} position="relative">
+              {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                const candidate = candidates[virtualRow.index];
+                return (
+                  <Box
+                    key={candidate.id}
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    width="100%"
+                    style={{
+                      transform: `translateY(${virtualRow.start}px)`
+                    }}
+                  >
+                    <CandidateCard candidate={candidate} />
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
         ) : (
           <Text fontSize="sm" color="gray.500" textAlign="center" py={8}>
             No candidates

@@ -169,8 +169,18 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <Box overflowX="auto" py={2}>
-        <HStack spacing={4} align="flex-start" minW="1200px">
+      <Box
+        overflowX="auto"
+        py={6}
+        px={2}
+        bg="#FEFAE0"
+        minH="calc(100vh - 120px)"
+        borderRadius="2xl"
+        boxShadow="sm"
+        border="1.5px solid #E9EDC9"
+        transition="box-shadow 0.2s"
+      >
+        <HStack spacing={6} align="flex-start" minW="1200px">
           {STAGES.map(stage => (
             <KanbanColumn
               key={stage}

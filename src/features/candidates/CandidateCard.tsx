@@ -27,17 +27,24 @@ export const CandidateCard = ({ candidate }: Props) => {
       style={style}
       {...attributes}
       {...listeners}
-      p={3}
+      p={4}
       bg="white"
-      borderWidth="1px"
-      borderRadius="lg"
-      boxShadow={transform ? 'md' : 'sm'}
+      borderWidth="1.5px"
+      borderRadius="xl"
+      borderColor="#E9EDC9"
+      boxShadow={transform ? 'lg' : 'base'}
       cursor="grab"
       mb={3}
-      _hover={{ boxShadow: 'md' }}
+      _hover={{ boxShadow: 'lg', borderColor: '#D4A373' }}
+      transition="all 0.18s"
     >
-      <Heading size="xs">{candidate.name}</Heading>
-      <Text fontSize="sm" color="gray.600">{candidate.email}</Text>
+      <Heading size="sm" color="#232323" mb={1} fontWeight="semibold" letterSpacing="tight">
+        {candidate.name}
+      </Heading>
+      <Text fontSize="sm" color="#6c757d" mb={1} noOfLines={1}>
+        {candidate.email}
+      </Text>
+      {/* You can add more candidate info here, e.g. role, status, etc., styled with the palette if needed */}
     </Box>
   );
 };

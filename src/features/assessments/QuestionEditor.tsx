@@ -52,45 +52,54 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
         updateQuestion(question.id, { options: newOptions });
     };
 
+  // Precompute available questions for conditional logic (those before this question)
+  const availableQuestions = allQuestions.filter(q => {
+    const currentIndex = allQuestions.findIndex(questionItem => questionItem.id === q.id);
+    const thisIndex = allQuestions.findIndex(questionItem => questionItem.id === question.id);
+    return q.id !== question.id && currentIndex < thisIndex;
+  });
+
+  const dependentQuestion = allQuestions.find(q => q.id === question.condition?.questionId);
+
     return (
       <div ref={setNodeRef} style={style}>
-        <Box 
-          p={6} 
-          borderWidth="1px" 
-          borderRadius="lg" 
-          bg="white" 
+        <Box
+          p={6}
+          borderWidth="1px"
+          borderRadius="lg"
+          bg="white"
           shadow="sm"
-          borderColor="gray.200"
-          _hover={{ shadow: "md", borderColor: "blue.300" }}
+          borderColor="#E9EDC9"
+          _hover={{ shadow: "md", borderColor: "#D4A373" }}
           transition="all 0.2s"
         >
           {/* Header */}
           <HStack justify="space-between" mb={4}>
-            <HStack spacing={3}>
-              <Icon 
-                as={DragHandleIcon} 
-                cursor="grab" 
-                color="gray.400" 
-                _hover={{ color: "blue.500" }}
-                {...attributes} 
-                {...listeners} 
+              <HStack spacing={3}>
+              <Icon
+                as={DragHandleIcon}
+                cursor="grab"
+                color="#6c757d"
+                _hover={{ color: "#D4A373" }}
+                {...attributes}
+                {...listeners}
               />
-              <Badge 
-                colorScheme="blue" 
-                variant="subtle" 
-                fontSize="xs" 
-                px={2} 
-                py={1} 
+              <Badge
+                bg="#CCD5AE"
+                color="#232323"
+                fontSize="xs"
+                px={2}
+                py={1}
                 borderRadius="md"
               >
                 Q{questionNumber}
               </Badge>
-              <Badge 
-                colorScheme="purple" 
-                variant="outline" 
-                fontSize="xs" 
-                px={2} 
-                py={1} 
+              <Badge
+                bg="#FAEDCD"
+                color="#232323"
+                fontSize="xs"
+                px={2}
+                py={1}
                 borderRadius="md"
                 textTransform="capitalize"
               >
@@ -108,7 +117,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
           </HStack>
 
           {/* Question Label */}
-          <VStack align="stretch" spacing={4}>
+            <VStack align="stretch" spacing={4}>
             <FormControl>
               <FormLabel fontSize="sm" fontWeight="medium" color="gray.700">
                 Question Text
@@ -123,8 +132,8 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
 
             {/* Options for choice questions */}
             {(question.type === 'single-choice' || question.type === 'multi-choice') && (
-              <Box p={4} bg="gray.50" borderRadius="md" border="1px" borderColor="gray.200">
-                <FormLabel fontSize="sm" fontWeight="medium" color="gray.700" mb={3}>
+              <Box p={4} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
+                <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
                   Answer Options
                 </FormLabel>
                 <VStack align="stretch" spacing={2}>
@@ -142,18 +151,19 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
                           size="xs" 
                           icon={<SmallCloseIcon />} 
                           variant="ghost"
-                          colorScheme="red"
+                          color="#c0392b"
                           onClick={() => removeOption(index)} 
                         />
                       </InputRightElement>
                     </InputGroup>
                   ))}
-                  <Button 
-                    size="sm" 
-                    leftIcon={<AddIcon />} 
+                  <Button
+                    size="sm"
+                    leftIcon={<AddIcon />}
                     onClick={addOption}
                     variant="outline"
-                    colorScheme="blue"
+                    borderColor="#D4A373"
+                    color="#232323"
                     w="fit-content"
                   >
                     Add Option
@@ -163,52 +173,52 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
             )}
 
             {/* Validation Settings */}
-            <Box p={4} bg="blue.50" borderRadius="md" border="1px" borderColor="blue.200">
-              <FormLabel fontSize="sm" fontWeight="medium" color="blue.700" mb={3}>
+            <Box p={4} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
+              <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
                 Validation Rules
               </FormLabel>
               <VStack align="stretch" spacing={3}>
-                <Checkbox 
-                  isChecked={question.validation?.required} 
+                <Checkbox
+                  isChecked={question.validation?.required}
                   onChange={(e) => updateValidationRule('required', e.target.checked)}
-                  colorScheme="blue"
+                  colorScheme="green"
                 >
                   Required field
                 </Checkbox>
-                
+
                 {(question.type === 'short-text' || question.type === 'long-text') && (
                   <FormControl>
-                    <FormLabel fontSize="xs" color="gray.600">Maximum Length</FormLabel>
-                    <Input 
-                      placeholder="No limit" 
-                      type="number" 
+                    <FormLabel fontSize="xs" color="#6c757d">Maximum Length</FormLabel>
+                    <Input
+                      placeholder="No limit"
+                      type="number"
                       size="sm"
-                      value={question.validation?.maxLength || ''} 
-                      onChange={(e) => updateValidationRule('maxLength', parseInt(e.target.value) || undefined)} 
+                      value={question.validation?.maxLength || ''}
+                      onChange={(e) => updateValidationRule('maxLength', parseInt(e.target.value) || undefined)}
                     />
                   </FormControl>
                 )}
-                
+
                 {question.type === 'numeric' && (
                   <HStack spacing={3}>
                     <FormControl>
-                      <FormLabel fontSize="xs" color="gray.600">Min Value</FormLabel>
-                      <Input 
-                        placeholder="No limit" 
-                        type="number" 
+                      <FormLabel fontSize="xs" color="#6c757d">Min Value</FormLabel>
+                      <Input
+                        placeholder="No limit"
+                        type="number"
                         size="sm"
-                        value={question.validation?.min || ''} 
-                        onChange={(e) => updateValidationRule('min', parseInt(e.target.value) || undefined)} 
+                        value={question.validation?.min || ''}
+                        onChange={(e) => updateValidationRule('min', parseInt(e.target.value) || undefined)}
                       />
                     </FormControl>
                     <FormControl>
-                      <FormLabel fontSize="xs" color="gray.600">Max Value</FormLabel>
-                      <Input 
-                        placeholder="No limit" 
-                        type="number" 
+                      <FormLabel fontSize="xs" color="#6c757d">Max Value</FormLabel>
+                      <Input
+                        placeholder="No limit"
+                        type="number"
                         size="sm"
-                        value={question.validation?.max || ''} 
-                        onChange={(e) => updateValidationRule('max', parseInt(e.target.value) || undefined)} 
+                        value={question.validation?.max || ''}
+                        onChange={(e) => updateValidationRule('max', parseInt(e.target.value) || undefined)}
                       />
                     </FormControl>
                   </HStack>
@@ -217,32 +227,21 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
             </Box>
 
             {/* Conditional Logic */}
-            <Box p={4} bg="green.50" borderRadius="md" border="1px" borderColor="green.200">
-              <FormLabel fontSize="sm" fontWeight="medium" color="green.700" mb={3}>
+            <Box p={4} bg="#E9EDC9" borderRadius="md" border="1px" borderColor="#CCD5AE">
+              <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
                 Conditional Logic
               </FormLabel>
               <VStack align="stretch" spacing={3}>
                 <FormControl>
                   <FormLabel fontSize="xs" color="gray.600">Show this question if...</FormLabel>
-                  {(() => {
-                    const availableQuestions = allQuestions.filter(q => {
-                      // Only show questions that come before this question in the order
-                      const currentIndex = allQuestions.findIndex(questionItem => questionItem.id === q.id);
-                      const thisIndex = allQuestions.findIndex(questionItem => questionItem.id === question.id);
-                      return q.id !== question.id && currentIndex < thisIndex;
-                    });
-                    
-                    if (availableQuestions.length === 0) {
-                      return (
-                        <Box p={3} bg="gray.100" borderRadius="md" textAlign="center">
-                          <Text fontSize="xs" color="gray.500">
-                            No previous questions available for conditional logic
-                          </Text>
-                        </Box>
-                      );
-                    }
-                    
-                    return (
+                  {availableQuestions.length === 0 ? (
+                    <Box p={3} bg="gray.100" borderRadius="md" textAlign="center">
+                      <Text fontSize="xs" color="gray.500">
+                        No previous questions available for conditional logic
+                      </Text>
+                    </Box>
+                  ) : (
+                    <>
                       <Select
                         placeholder="Select a question"
                         value={question.condition?.questionId || ''}
@@ -250,9 +249,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
                         onChange={(e) => {
                           const questionId = e.target.value;
                           if (questionId) {
-                            updateQuestion(question.id, { 
-                              condition: { questionId, value: question.condition?.value || '' } 
-                            });
+                            updateQuestion(question.id, { condition: { questionId, value: question.condition?.value || '' } });
                           } else {
                             updateQuestion(question.id, { condition: undefined });
                           }
@@ -264,54 +261,45 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
                           </option>
                         ))}
                       </Select>
-                    );
-                  })()}
+
+                      {dependentQuestion && dependentQuestion.options && dependentQuestion.options.length > 0 ? (
+                        <FormControl>
+                          <FormLabel fontSize="xs" color="#6c757d">...equals this value</FormLabel>
+                          <Select
+                            placeholder="Select value"
+                            size="sm"
+                            value={question.condition?.value || ''}
+                            onChange={(e) => updateQuestion(question.id, {
+                              condition: {
+                                questionId: question.condition?.questionId!,
+                                value: e.target.value
+                              }
+                            })}
+                          >
+                            {dependentQuestion.options.map(option => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      ) : (
+                        <FormControl>
+                          <FormLabel fontSize="xs" color="#6c757d">...equals this value</FormLabel>
+                          <Input
+                            placeholder="Enter the value"
+                            size="sm"
+                            value={question.condition?.value || ''}
+                            onChange={(e) => updateQuestion(question.id, {
+                              condition: {
+                                questionId: question.condition?.questionId!,
+                                value: e.target.value
+                              }
+                            })}
+                          />
+                        </FormControl>
+                      )}
+                    </>
+                  )}
                 </FormControl>
-                
-                {question.condition?.questionId && (() => {
-                  const dependentQuestion = allQuestions.find(q => q.id === question.condition?.questionId);
-                  const hasOptions = dependentQuestion?.type === 'single-choice' || dependentQuestion?.type === 'multi-choice';
-                  
-                  if (hasOptions && dependentQuestion?.options) {
-                    return (
-                      <FormControl>
-                        <FormLabel fontSize="xs" color="gray.600">...equals this value</FormLabel>
-                        <Select
-                          placeholder="Select value"
-                          size="sm"
-                          value={question.condition?.value || ''}
-                          onChange={(e) => updateQuestion(question.id, {
-                            condition: {
-                              questionId: question.condition?.questionId!,
-                              value: e.target.value
-                            }
-                          })}
-                        >
-                          {dependentQuestion.options.map(option => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    );
-                  } else {
-                    return (
-                      <FormControl>
-                        <FormLabel fontSize="xs" color="gray.600">...equals this value</FormLabel>
-                        <Input
-                          placeholder="Enter the value"
-                          size="sm"
-                          value={question.condition?.value || ''}
-                          onChange={(e) => updateQuestion(question.id, {
-                            condition: {
-                              questionId: question.condition?.questionId!,
-                              value: e.target.value
-                            }
-                          })}
-                        />
-                      </FormControl>
-                    );
-                  }
-                })()}
               </VStack>
             </Box>
           </VStack>

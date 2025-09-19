@@ -47,11 +47,11 @@ const JobDetailPage = () => {
     fetchJob();
   }, [jobId, navigate, toast]);
 
-  if (loading) return <Spinner size="xl" />;
+  if (loading) return <VStack justify="center" align="center" h="50vh"><Spinner size="xl" color="#D4A373" /></VStack>;
   if (!job) return <Text>Job not found.</Text>;
 
   return (
-    <VStack spacing={6} align="stretch" maxW="800px" mx="auto">
+    <VStack spacing={6} align="stretch" maxW="900px" mx="auto" px={{ base: 4, md: 0 }}>
       <HStack>
         <Button 
           leftIcon={<ArrowBackIcon />} 
@@ -62,35 +62,37 @@ const JobDetailPage = () => {
         </Button>
       </HStack>
 
-      <Box>
+      <Box bg="#FFFFFF" p={{ base: 4, md: 8 }} borderRadius="xl" boxShadow="0 12px 40px rgba(0,0,0,0.06)">
         <HStack justify="space-between" mb={4}>
-          <Heading size="xl">{job.title}</Heading>
+          <Heading size="xl" color="#232323">{job.title}</Heading>
           <Badge 
-            colorScheme={job.status === 'active' ? 'green' : 'gray'} 
-            fontSize="sm" 
-            px={3} 
-            py={1} 
+            bg={job.status === 'active' ? '#D4A373' : '#E9EDC9'}
+            color="#232323"
+            fontSize="sm"
+            px={3}
+            py={1}
             borderRadius="full"
+            boxShadow="0 4px 12px rgba(212,163,115,0.12)"
           >
             {job.status}
           </Badge>
         </HStack>
-        
-        <Text color="gray.600" fontSize="lg" mb={6}>
+
+        <Text color="#6c757d" fontSize="lg" mb={6}>
           Job ID: {job.id} • Slug: {job.slug}
           {applicants !== null && (
             <>
-              {' '}• Applicants: <Kbd>{applicants.length}</Kbd>
+              {' '}• Applicants: <Kbd bg="#FAEDCD" color="#232323">{applicants.length}</Kbd>
             </>
           )}
         </Text>
 
         <Box mb={6}>
-          <Heading size="md" mb={3}>Tags</Heading>
+          <Heading size="md" mb={3} color="#232323">Tags</Heading>
           <Wrap>
             {job.tags.map(tag => (
               <WrapItem key={tag}>
-                <Tag colorScheme="blue" borderRadius="full">
+                <Tag bg="#E9EDC9" color="#232323" borderRadius="full">
                   <TagLabel>{tag}</TagLabel>
                 </Tag>
               </WrapItem>
@@ -98,63 +100,83 @@ const JobDetailPage = () => {
           </Wrap>
         </Box>
 
-        <Divider my={6} />
+        <Divider my={6} borderColor="#E9EDC9" />
 
         <VStack spacing={4} align="stretch">
-          <Heading size="md">Actions</Heading>
+          <Heading size="md" color="#232323">Actions</Heading>
           <HStack spacing={4} flexWrap="wrap">
             <Button 
               as={Link} 
               to={`/jobs/${job.id}/edit`}
               leftIcon={<EditIcon />}
-              colorScheme="blue"
-              variant="outline"
+              bg="transparent"
+              border="1px"
+              borderColor="#CCD5AE"
+              color="#232323"
+              _hover={{ bg: '#FAEDCD' }}
             >
               Edit Job
             </Button>
             <Button 
               as={Link} 
               to={`/jobs/${job.id}/assessment`}
-              colorScheme="teal"
+              bg="#CCD5AE"
+              color="#232323"
+              _hover={{ bg: '#E9EDC9' }}
             >
               Manage Assessment
             </Button>
             <Button 
               as={Link} 
               to={`/jobs/${job.id}/livepreview`}
-              colorScheme="green"
+              bg="#D4A373"
+              color="#232323"
               size="lg"
+              _hover={{ bg: '#CCD5AE' }}
             >
               Preview Assessment
             </Button>
           </HStack>
         </VStack>
 
-        <Divider my={6} />
+        <Divider my={6} borderColor="#E9EDC9" />
 
         <VStack spacing={3} align="stretch">
           <HStack justify="space-between">
-            <Heading size="md">Applicants</Heading>
+            <Heading size="md" color="#232323">Applicants</Heading>
             {applicants !== null && (
-              <Badge colorScheme="purple" borderRadius="full" px={2}>{applicants.length}</Badge>
+              <Badge bg="#FAEDCD" color="#232323" borderRadius="full" px={3}>{applicants.length}</Badge>
             )}
           </HStack>
           {applicants === null ? (
             <Spinner />
           ) : applicants.length === 0 ? (
-            <Text color="gray.500">No applicants yet.</Text>
+            <Text color="#6c757d">No applicants yet.</Text>
           ) : (
             <List spacing={2}>
               {applicants.map(c => (
                 <ListItem key={c.id}>
-                  <HStack justify="space-between" p={3} borderWidth="1px" borderColor="gray.100" borderRadius="md">
+                  <HStack justify="space-between" p={3} bg="#FEFAE0" borderRadius="md">
                     <VStack align="start" spacing={0}>
-                      <Button as={Link} to={`/candidates/${c.id}`} variant="link" colorScheme="blue">
+                      <Button as={Link} to={`/candidates/${c.id}`} variant="link" color="#232323">
                         {c.name}
                       </Button>
-                      <Text fontSize="sm" color="gray.600">{c.email}</Text>
+                      <Text fontSize="sm" color="#6c757d">{c.email}</Text>
                     </VStack>
-                    <Badge colorScheme={c.stage === 'hired' ? 'green' : c.stage === 'rejected' ? 'red' : 'blue'}>{c.stage}</Badge>
+                    <Badge
+                      bg={
+                        c.stage === 'offer' ? '#FFA500' : // orange
+                        c.stage === 'applied' ? '#3182ce' : // blue.500
+                        c.stage === 'tech' ? '#FF8C00' : // dark orange
+                        c.stage === 'screen' ? '#38B2AC' : // teal.400
+                        c.stage === 'hired' ? '#23f80fff' :
+                        c.stage === 'rejected' ? '#f9422eff' :
+                        '#CCD5AE'
+                      }
+                      color="#232323"
+                    >
+                      {c.stage}
+                    </Badge>
                   </HStack>
                 </ListItem>
               ))}

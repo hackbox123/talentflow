@@ -45,17 +45,20 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
   return (
     <Box
       ref={setNodeRef}
-      bg="gray.50"
-      borderRadius="lg"
+      bg="#FFF"
+      borderRadius="2xl"
       p={4}
       flex="1"
       minW="300px"
       minH={`${COLUMN_HEIGHT}px`}
-      borderWidth="1px"
-      borderColor="gray.200"
+      borderWidth="1.5px"
+      borderColor="#E9EDC9"
+      boxShadow="base"
+      transition="box-shadow 0.18s, border-color 0.18s"
+      _hover={{ boxShadow: 'md', borderColor: '#D4A373' }}
     >
-      <Heading size="sm" mb={4} textTransform="capitalize" color="gray.700">
-        {stage} ({candidates.length})
+      <Heading size="sm" mb={4} textTransform="capitalize" color="#232323" fontWeight="semibold" letterSpacing="tight">
+        {stage} <Text as="span" color="#D4A373">({candidates.length})</Text>
       </Heading>
       <SortableContext id={stage} items={candidates.map(c => c.id!)} strategy={verticalListSortingStrategy}>
         {candidates.length > 0 ? (
@@ -87,7 +90,7 @@ export const KanbanColumn = ({ stage, candidates }: Props) => {
             </Box>
           </Box>
         ) : (
-          <Text fontSize="sm" color="gray.500" textAlign="center" py={8}>
+          <Text fontSize="sm" color="#adb5bd" textAlign="center" py={8}>
             No candidates
           </Text>
         )}

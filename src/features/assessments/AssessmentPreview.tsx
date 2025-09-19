@@ -1,8 +1,20 @@
 // src/features/assessments/AssessmentPreview.tsx
 import { useForm, useWatch } from 'react-hook-form';
-import { 
-  Button, FormControl, FormLabel, Input, Radio, RadioGroup, Stack, 
-  Textarea, VStack, Checkbox, CheckboxGroup, FormErrorMessage, Text 
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Radio,
+  RadioGroup,
+  Stack,
+  Textarea,
+  VStack,
+  Checkbox,
+  CheckboxGroup,
+  FormErrorMessage,
+  Text,
+  Box,
 } from '@chakra-ui/react';
 import { type Question } from '../../api/db';
 
@@ -42,12 +54,11 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
     return dependentValue === value;
   };
 
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <VStack spacing={6} align="stretch">
         {questions.length === 0 ? (
-          <Text color="gray.500" textAlign="center" py={8}>
+          <Text color="#6c757d" textAlign="center" py={8}>
             No questions added yet. Add questions in the editor to see the preview.
           </Text>
         ) : (
@@ -62,38 +73,40 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
           };
 
           return (
-            <FormControl key={q.id} isInvalid={!!errors[q.id]} isRequired={q.validation?.required}>
-              <FormLabel htmlFor={q.id}>{q.label}</FormLabel>
-              {q.type === 'short-text' && <Input id={q.id} {...register(q.id, validationRules)} />}
-              {q.type === 'long-text' && <Textarea id={q.id} {...register(q.id, validationRules)} />}
-              {q.type === 'numeric' && <Input type="number" id={q.id} {...register(q.id, validationRules)} />}
-              {q.type === 'single-choice' && (
-                <RadioGroup>
-                  <Stack>
-                    {q.options?.map(opt => (
-                      <Radio key={opt} value={opt} {...register(q.id, validationRules)}>{opt}</Radio>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              )}
-              {q.type === 'multi-choice' && (
-                <CheckboxGroup>
-                  <Stack>
-                    {q.options?.map(opt => (
-                      <Checkbox key={opt} value={opt} {...register(q.id, validationRules)}>{opt}</Checkbox>
-                    ))}
-                  </Stack>
-                </CheckboxGroup>
-              )}
-              {q.type === 'file' && <Input type="file" id={q.id} isDisabled p={1} />}
-              {/* CORRECTED: Display the actual error message */}
-              <FormErrorMessage>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
-            </FormControl>
+            <Box key={q.id} bg="white" p={4} borderRadius="md" boxShadow="0 6px 20px rgba(0,0,0,0.04)">
+              <FormControl isInvalid={!!errors[q.id]} isRequired={q.validation?.required}>
+                <FormLabel htmlFor={q.id} color="#232323">{q.label}</FormLabel>
+                {q.type === 'short-text' && <Input id={q.id} {...register(q.id, validationRules)} bg="white" />}
+                {q.type === 'long-text' && <Textarea id={q.id} {...register(q.id, validationRules)} bg="white" />}
+                {q.type === 'numeric' && <Input type="number" id={q.id} {...register(q.id, validationRules)} bg="white" />}
+                {q.type === 'single-choice' && (
+                  <RadioGroup>
+                    <Stack>
+                      {q.options?.map(opt => (
+                        <Radio key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green">{opt}</Radio>
+                      ))}
+                    </Stack>
+                  </RadioGroup>
+                )}
+                {q.type === 'multi-choice' && (
+                  <CheckboxGroup>
+                    <Stack>
+                      {q.options?.map(opt => (
+                        <Checkbox key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green">{opt}</Checkbox>
+                      ))}
+                    </Stack>
+                  </CheckboxGroup>
+                )}
+                {q.type === 'file' && <Input type="file" id={q.id} isDisabled p={1} />}
+                {/* CORRECTED: Display the actual error message */}
+                <FormErrorMessage>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
+              </FormControl>
+            </Box>
           );
           })
         )}
         {questions.length > 0 && (
-          <Button type="submit" colorScheme="green" mt={4}>Submit Assessment</Button>
+          <Button type="submit" bg="#D4A373" color="#232323" mt={4} _hover={{ bg: '#CCD5AE' }}>Submit Assessment</Button>
         )}
       </VStack>
     </form>

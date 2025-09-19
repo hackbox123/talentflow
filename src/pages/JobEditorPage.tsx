@@ -68,18 +68,20 @@ export default function JobEditorPage() {
         navigate('/jobs');
     };
 
-    if (isLoading) return (<Spinner />);
+    if (isLoading) return (<Box display="flex" justifyContent="center" alignItems="center" h="50vh"><Spinner size="xl" color="#D4A373" /></Box>);
 
     return (
-        <Box>
-            <Heading mb={6}>{isEditing ? 'Edit Job' : 'Create New Job'}</Heading>
-            <JobForm
-                job={job}
-                allJobs={allJobs}
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-                isLoading={isSaving}
-            />
+        <Box maxW="900px" mx="auto" px={{ base: 4, md: 0 }}>
+            <Heading mb={6} color="#232323">{isEditing ? 'Edit Job' : 'Create New Job'}</Heading>
+            <Box bg="#FFFFFF" p={{ base: 4, md: 8 }} borderRadius="xl" boxShadow="0 12px 40px rgba(0,0,0,0.06)">
+                <JobForm
+                    job={job}
+                    allJobs={allJobs}
+                    onSubmit={handleSubmit}
+                    onCancel={handleCancel}
+                    isLoading={isSaving}
+                />
+            </Box>
         </Box>
     );
 }

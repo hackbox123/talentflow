@@ -109,19 +109,19 @@ export default function AssessmentBuilderPage() {
   };
 
   if (loading) return (
-    <Flex justify="center" align="center" h="100vh">
+    <Flex justify="center" align="center" h="100vh" bg="#FEFAE0">
       <VStack spacing={4}>
-        <Spinner size="xl" color="blue.500" />
-        <Text>Loading assessment builder...</Text>
+        <Spinner size="xl" color="#D4A373" />
+        <Text color="#6c757d">Loading assessment builder...</Text>
       </VStack>
     </Flex>
   );
 
   return (
-    <Container maxW="full" p={0}>
+    <Container maxW="full" p={0} bg="#FEFAE0">
       {/* Header */}
-      <Box bg="white" borderBottom="1px" borderColor="gray.200" p={6}>
-        <Flex justify="space-between" align="center">
+      <Box bg="#FEFAE0" borderBottom="1px" borderColor="#E9EDC9" p={6}>
+        <Flex justify="space-between" align="center" maxW="1200px" mx="auto">
           <HStack spacing={4}>
             <IconButton
               aria-label="Back to job"
@@ -130,22 +130,23 @@ export default function AssessmentBuilderPage() {
               onClick={() => navigate(`/jobs/${jobId}`)}
             />
             <VStack align="start" spacing={1}>
-              <Heading size="lg" color="gray.800">Assessment Builder</Heading>
-              <Text color="gray.600" fontSize="sm">
+              <Heading size="lg" color="#232323">Assessment Builder</Heading>
+              <Text color="#6c757d" fontSize="sm">
                 Create and customize your job assessment
               </Text>
             </VStack>
           </HStack>
-          
+
           <HStack spacing={3}>
-            <Badge colorScheme="blue" fontSize="sm" px={3} py={1} borderRadius="full">
+            <Badge bg="#CCD5AE" color="#232323" fontSize="sm" px={3} py={1} borderRadius="full">
               {questions.length} Questions
             </Badge>
-            <Button 
-              colorScheme="blue" 
-              onClick={handleSave} 
+            <Button
+              bg="#D4A373"
+              color="#232323"
+              onClick={handleSave}
               isLoading={saving}
-              loadingText="Saving..."
+              _hover={{ bg: '#CCD5AE' }}
               leftIcon={<SettingsIcon />}
             >
               Save Assessment
@@ -154,23 +155,23 @@ export default function AssessmentBuilderPage() {
         </Flex>
       </Box>
 
-      <Grid templateColumns="1fr 400px" gap={0} h="calc(100vh - 120px)">
+      <Grid templateColumns="1fr 420px" gap={6} maxW="1200px" mx="auto" p={6}>
         {/* Main Editor */}
-        <GridItem bg="gray.50" p={6} overflowY="auto">
+        <GridItem bg="#FEFAE0" p={6} overflowY="auto">
           <VStack spacing={6} align="stretch">
             {/* Add Question Section */}
-            <Card>
+            <Card bg="white" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
               <CardHeader pb={3}>
                 <HStack justify="space-between">
-                  <Heading size="md" color="gray.700">Add Questions</Heading>
-                  <Badge colorScheme="green" variant="subtle">
+                  <Heading size="md" color="#232323">Add Questions</Heading>
+                  <Badge bg="#FAEDCD" color="#232323" px={3} py={1} borderRadius="full">
                     {questions.length} Total
                   </Badge>
                 </HStack>
               </CardHeader>
               <CardBody pt={0}>
                 <VStack spacing={3} align="stretch">
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color="#6c757d">
                     Choose a question type to add to your assessment:
                   </Text>
                   
@@ -178,79 +179,79 @@ export default function AssessmentBuilderPage() {
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('short-text')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">Short Text</Text>
-                      <Text fontSize="xs" color="gray.500">Single line input</Text>
+                      <Text fontSize="xs" color="#6c757d">Single line input</Text>
                     </Button>
                     
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('long-text')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">Long Text</Text>
-                      <Text fontSize="xs" color="gray.500">Multi-line input</Text>
+                      <Text fontSize="xs" color="#6c757d">Multi-line input</Text>
                     </Button>
                     
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('numeric')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">Numeric</Text>
-                      <Text fontSize="xs" color="gray.500">Number input</Text>
+                      <Text fontSize="xs" color="#6c757d">Number input</Text>
                     </Button>
                     
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('single-choice')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">Single Choice</Text>
-                      <Text fontSize="xs" color="gray.500">Radio buttons</Text>
+                      <Text fontSize="xs" color="#6c757d">Radio buttons</Text>
                     </Button>
                     
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('multi-choice')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">Multi Choice</Text>
-                      <Text fontSize="xs" color="gray.500">Checkboxes</Text>
+                      <Text fontSize="xs" color="#6c757d">Checkboxes</Text>
                     </Button>
                     
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
-                      colorScheme="blue"
+                      borderColor="#E9EDC9"
                       onClick={() => addQuestion('file')}
                       h="60px"
                       flexDirection="column"
                       gap={1}
                     >
                       <Text fontSize="sm" fontWeight="medium">File Upload</Text>
-                      <Text fontSize="xs" color="gray.500">Document upload</Text>
+                      <Text fontSize="xs" color="#6c757d">Document upload</Text>
                     </Button>
                   </Grid>
                 </VStack>
@@ -259,15 +260,15 @@ export default function AssessmentBuilderPage() {
 
             {/* Questions List */}
             {questions.length === 0 ? (
-              <Card>
+              <Card bg="white" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
                 <CardBody textAlign="center" py={12}>
                   <VStack spacing={4}>
-                    <Box p={4} bg="blue.50" borderRadius="full">
-                      <EditIcon boxSize={8} color="blue.500" />
+                    <Box p={4} bg="#FAEDCD" borderRadius="full">
+                      <EditIcon boxSize={8} color="#D4A373" />
                     </Box>
                     <VStack spacing={2}>
-                      <Heading size="md" color="gray.600">No Questions Yet</Heading>
-                      <Text color="gray.500" fontSize="sm">
+                      <Heading size="md" color="#232323">No Questions Yet</Heading>
+                      <Text color="#6c757d" fontSize="sm">
                         Add your first question using the buttons above to get started
                       </Text>
                     </VStack>
@@ -275,11 +276,11 @@ export default function AssessmentBuilderPage() {
                 </CardBody>
               </Card>
             ) : (
-              <Card>
+              <Card bg="white" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
                 <CardHeader pb={3}>
                   <HStack justify="space-between">
-                    <Heading size="md" color="gray.700">Questions</Heading>
-                    <Text fontSize="sm" color="gray.500">
+                    <Heading size="md" color="#232323">Questions</Heading>
+                    <Text fontSize="sm" color="#6c757d">
                       Drag to reorder
                     </Text>
                   </HStack>
@@ -308,23 +309,29 @@ export default function AssessmentBuilderPage() {
         </GridItem>
         
         {/* Preview Panel */}
-        <GridItem bg="white" borderLeft="1px" borderColor="gray.200" p={6} overflowY="auto">
+        <GridItem bg="#FAEDCD" borderLeft="1px" borderColor="#E9EDC9" p={6} overflowY="auto">
           <VStack spacing={4} align="stretch" h="full">
             <HStack justify="space-between">
-              <Heading size="md" color="gray.700">Live Preview</Heading>
-              <Badge colorScheme="green" variant="subtle">
+              <Heading size="md" color="#232323">Live Preview</Heading>
+              <Badge bg="#CCD5AE" color="#232323" px={3} py={1} borderRadius="full">
                 <ViewIcon mr={1} />
                 Candidate View
               </Badge>
             </HStack>
             
-            <Text fontSize="sm" color="gray.600">
+            <Text fontSize="sm" color="#6c757d">
               This is how candidates will see and interact with your assessment
             </Text>
             
-            <Box flex="1" overflowY="auto">
-              <AssessmentPreview questions={questions} />
-            </Box>
+            {questions.length > 0 ? (
+              <Box flex="1" overflowY="auto" p={4} bg="white" borderRadius="md" boxShadow="0 6px 20px rgba(0,0,0,0.04)">
+                <AssessmentPreview questions={questions} />
+              </Box>
+            ) : (
+              <Box p={4} borderRadius="md" border="1px dashed" borderColor="#E9EDC9" minH="140px" display="flex" alignItems="center" justifyContent="center">
+                <Text color="#6c757d">Live preview will appear here once you add questions.</Text>
+              </Box>
+            )}
           </VStack>
         </GridItem>
       </Grid>

@@ -1,15 +1,15 @@
 // src/pages/CandidatesPage.tsx
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Box, 
-  Heading, 
-  Spinner, 
-  Input, 
-  HStack, 
-  Button, 
-  Select, 
+import {
+  Box,
+  Heading,
+  Spinner,
+  Input,
+  HStack,
+  Button,
+  Select,
   Text,
-  VStack
+  VStack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -84,89 +84,103 @@ export default function CandidatesPage() {
   if (loading) {
     return (
       <VStack justify="center" h="50vh">
-        <Spinner size="xl" />
+        <Spinner size="xl" color="#D4A373" />
       </VStack>
     );
   }
 
   return (
-    <Box>
-      <HStack justify="space-between" mb={4}>
-        <Heading>Candidates ({filteredCandidates.length})</Heading>
-        <Button onClick={() => setView(view === 'list' ? 'kanban' : 'list')}>
-          Switch to {view === 'list' ? 'Kanban View' : 'List View'}
-        </Button>
-      </HStack>
+    <Box bg="#FEFAE0" minH="80vh" p={6} borderRadius="xl">
+      <Box maxW="container.xl" mx="auto">
+        <HStack justify="space-between" mb={4}>
+          <Heading color="#232323">Candidates ({filteredCandidates.length})</Heading>
+          <Button
+            bg="#D4A373"
+            color="#232323"
+            _hover={{ bg: '#CCD5AE' }}
+            onClick={() => setView(view === 'list' ? 'kanban' : 'list')}
+          >
+            Switch to {view === 'list' ? 'Kanban View' : 'List View'}
+          </Button>
+        </HStack>
 
-      {/* Filter Controls */}
-      <HStack mb={6} spacing={4}>
-        <Input
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Select
-          placeholder="Filter by stage"
-          value={stageFilter}
-          onChange={(e) => {
-            setSearchTerm(''); // Clear search when changing stage filter
-            setStageFilter(e.target.value);
-          }}
-        >
-          {STAGES.map(stage => (
-            <option key={stage} value={stage} style={{ textTransform: 'capitalize' }}>
-              {stage}
-            </option>
-          ))}
-        </Select>
-      </HStack>
+        {/* Filter Controls */}
+        <HStack mb={6} spacing={4}>
+          <Input
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            bg="white"
+            borderRadius="md"
+            _placeholder={{ color: '#adb5bd' }}
+          />
+          <Select
+            placeholder="Filter by stage"
+            value={stageFilter}
+            onChange={(e) => {
+              setSearchTerm(''); // Clear search when changing stage filter
+              setStageFilter(e.target.value);
+            }}
+            bg="white"
+            borderRadius="md"
+          >
+            {STAGES.map(stage => (
+              <option key={stage} value={stage} style={{ textTransform: 'capitalize' }}>
+                {stage}
+              </option>
+            ))}
+          </Select>
+        </HStack>
 
-      {/* Conditional Rendering based on view state */}
-      {view === 'list' ? (
-        <Box
-          ref={parentRef}
-          h="700px" // Define a fixed height for the scroll container
-          overflow="auto"
-          border="1px solid"
-          borderColor="gray.200"
-          borderRadius="md"
-        >
-          {/* A single large div to create the total scrollable height */}
-          <Box h={`${rowVirtualizer.getTotalSize()}px`} w="100%" position="relative">
-            {/* Map over the virtual items, not the whole array */}
-            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-              const candidate = filteredCandidates[virtualItem.index];
-              return (
-                <Box
-                  key={virtualItem.key}
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  w="100%"
-                  h={`${virtualItem.size}px`}
-                  transform={`translateY(${virtualItem.start}px)`}
-                  p={4}
-                  borderBottom="1px solid"
-                  borderColor="gray.100"
-                  onClick={() => navigate(`/candidates/${candidate.id}`)}
-                  cursor="pointer"
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Heading size="sm">{candidate.name}</Heading>
-                  <Text color="gray.600">{candidate.email}</Text>
-                </Box>
-              );
-            })}
+        {/* Conditional Rendering based on view state */}
+        {view === 'list' ? (
+          <Box
+            ref={parentRef}
+            h="700px" // Define a fixed height for the scroll container
+            overflow="auto"
+            borderRadius="md"
+            bg="white"
+            border="1px solid"
+            borderColor="#E9EDC9"
+            boxShadow="0 6px 20px rgba(0,0,0,0.04)"
+          >
+            {/* A single large div to create the total scrollable height */}
+            <Box h={`${rowVirtualizer.getTotalSize()}px`} w="100%" position="relative">
+              {/* Map over the virtual items, not the whole array */}
+              {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                const candidate = filteredCandidates[virtualItem.index];
+                return (
+                  <Box
+                    key={virtualItem.key}
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    w="100%"
+                    h={`${virtualItem.size}px`}
+                    transform={`translateY(${virtualItem.start}px)`}
+                    p={4}
+                    borderBottom="1px solid"
+                    borderColor="#E9EDC9"
+                    onClick={() => navigate(`/candidates/${candidate.id}`)}
+                    cursor="pointer"
+                    _hover={{ bg: '#FEFAE0' }}
+                  >
+                    <Heading size="sm" color="#232323">{candidate.name}</Heading>
+                    <Text color="#6c757d">{candidate.email}</Text>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
-        </Box>
-      ) : (
-        <KanbanBoard 
-          key={`kanban-${kanbanCandidates.length}-${searchTerm}`}
-          initialCandidates={kanbanCandidates} 
-          onCandidatesChange={handleKanbanCandidatesChange}
-          searchTerm={searchTerm}
-        />
-      )}
+        ) : (
+          <KanbanBoard 
+            key={`kanban-${kanbanCandidates.length}-${searchTerm}`}
+            initialCandidates={kanbanCandidates} 
+            onCandidatesChange={handleKanbanCandidatesChange}
+            searchTerm={searchTerm}
+          />
+        )}
+      </Box>
     </Box>
   );
-};
+}

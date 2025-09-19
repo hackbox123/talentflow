@@ -1,73 +1,124 @@
-import { Box, Button, Container, Heading, Text, VStack, HStack } from '@chakra-ui/react';
+import { Box, Button, Container, Heading, Text, VStack, HStack, Image } from '@chakra-ui/react';
+import talentflowLogo from '../assets/talentflow.svg';
 import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   return (
-    <Box bg="#FEFAE0" minH="100vh" py={0}>
-      <Container maxW="container.xl" py={24} px={{ base: 4, md: 10 }}>
-        <VStack spacing={10} align="center" textAlign="center">
-          <Box
-            bgGradient="linear(to-br, #CCD5AE, #E9EDC9)"
-            borderRadius="2xl"
-            boxShadow="0 8px 32px 0 #D4A37344"
-            p={{ base: 8, md: 16 }}
-            w="full"
-            maxW="3xl"
-          >
+    <Box
+      minH="100vh"
+      py={{ base: 12, md: 20 }}
+      bgGradient="linear(to-br, #FEFAE0 60%, #E9EDC9 100%)"
+      position="relative"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+    width: '100%',
+    height: '100%',
+        opacity: 0.08,
+        zIndex: 0,
+      }}
+    >
+      <Container maxW="container.xl" px={{ base: 4, md: 10 }} position="relative" zIndex={1}>
+        <HStack spacing={{ base: 0, md: 16 }} align="center" justify="center" minH="70vh" flexDir={{ base: 'column', md: 'row' }}>
+          <VStack spacing={8} align="start" maxW="lg">
+            <Box mb={2}>
+              <Image
+                src={talentflowLogo}
+                alt="TalentFlow Logo"
+                boxSize={{ base: '80px', md: '110px' }}
+                borderRadius="2xl"
+                boxShadow="0 8px 32px rgba(212,163,115,0.18)"
+                bg="#fff"
+                p={2}
+                style={{ animation: 'float 3.5s ease-in-out infinite' }}
+              />
+            </Box>
             <Heading
               as="h1"
               size="2xl"
               fontWeight="extrabold"
               color="#232323"
-              mb={4}
               letterSpacing="tight"
-              textShadow="0 2px 8px #FAEDCD"
+              textAlign="left"
+              lineHeight={1.1}
+              mb={2}
             >
-              Welcome to TalentFlow
+              The Modern Hiring Platform
             </Heading>
-            <Text fontSize="xl" color="#6c757d" mb={8}>
-              The modern platform for managing jobs, candidates, and assessments. Streamline your hiring process with a beautiful, intuitive interface.
+            <Text fontSize="xl" color="#6c757d" maxW="2xl" textAlign="left">
+              Streamline your hiring process with beautiful, intuitive tools for jobs, candidates, and assessments.
             </Text>
-            <HStack justify="center" spacing={6}>
+            <HStack spacing={6} pt={2}>
               <Button
                 size="lg"
                 px={10}
                 py={7}
-                fontWeight="extrabold"
+                fontWeight="bold"
                 fontSize="xl"
                 bg="#D4A373"
                 color="#232323"
                 borderRadius="xl"
-                boxShadow="0 4px 24px 0 #CCD5AE88"
-                _hover={{ bg: '#CCD5AE', color: '#232323', boxShadow: '0 8px 32px 0 #D4A37388', transform: 'scale(1.04)' }}
-                _active={{ bg: '#D4A373', color: '#232323', transform: 'scale(0.98)' }}
-                transition="all 0.2s cubic-bezier(.4,0,.2,1)"
+                boxShadow="0 8px 32px rgba(212,163,115,0.16)"
+                _hover={{ bg: '#CCD5AE', transform: 'translateY(-3px) scale(1.04)' }}
                 onClick={() => navigate('/jobs')}
               >
-                Get Started
+                Explore Jobs
               </Button>
               <Button
                 size="lg"
                 px={10}
                 py={7}
-                fontWeight="extrabold"
+                fontWeight="bold"
                 fontSize="xl"
                 variant="outline"
                 borderColor="#D4A373"
                 color="#232323"
                 borderRadius="xl"
-                _hover={{ bg: '#FAEDCD', color: '#232323' }}
-                _active={{ bg: '#D4A373', color: '#232323' }}
-                transition="all 0.2s cubic-bezier(.4,0,.2,1)"
+                _hover={{ bg: '#FAEDCD', borderColor: '#D4A373', color: '#232323' }}
                 onClick={() => navigate('/candidates')}
               >
-                View Candidates
+                Meet Candidates
               </Button>
             </HStack>
+            <Text fontSize="md" color="#6c757d" pt={4} textAlign="left">
+              Trusted by hiring teams worldwide — start building high-quality candidate flows in minutes.
+            </Text>
+          </VStack>
+          <Box display={{ base: 'none', md: 'block' }} flex="1" alignSelf="stretch" h="100%">
+            <Box
+              h="100%"
+              minH="340px"
+              borderRadius="3xl"
+              bgGradient="linear(to-br, #E9EDC9 60%, #FEFAE0 100%)"
+              boxShadow="0 12px 40px rgba(212,163,115,0.10)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              position="relative"
+              overflow="hidden"
+            >
+              <Image
+                src={talentflowLogo}
+                alt="TalentFlow Illustration"
+                boxSize="220px"
+                borderRadius="2xl"
+                opacity={0.92}
+                style={{ animation: 'float 3.5s ease-in-out infinite' }}
+              />
+            </Box>
           </Box>
-        </VStack>
+        </HStack>
       </Container>
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-18px); }
+          100% { transform: translateY(0px); }
+        }
+      `}</style>
     </Box>
   );
 }

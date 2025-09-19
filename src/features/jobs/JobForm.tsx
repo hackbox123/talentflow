@@ -105,47 +105,52 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
     
 
     return (
-        <Box>
+        <Box bg="#FEFAE0" p={6} borderRadius="xl">
             <form id="job-form" onSubmit={handleSubmit(onSubmit)}>
-                <VStack spacing={4}>
-                    <FormControl isInvalid={!!errors.title}>
-                        <FormLabel htmlFor="title">Job Title</FormLabel>
-                        <Input id="title" {...register('title', { required: 'Title is required' })} />
-                        <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-                    </FormControl>
-                        <FormControl isInvalid={!!errors.slug}>
-                            <FormLabel htmlFor="slug">Slug</FormLabel>
-                            <Input
-                                id="slug"
-                                {...register('slug', {
-                                    required: 'Slug is required',
-                                    validate: (value) => {
-                                        const otherJobs = job ? allJobs.filter(j => j.id !== job.id) : allJobs;
-                                        const isUnique = !otherJobs.some(j => j.slug === value);
-                                        return isUnique || 'This slug is already in use.';
-                                    }
-                                })}
-                            />
-                            <FormErrorMessage>{errors.slug?.message}</FormErrorMessage>
-                        </FormControl>
+                <VStack spacing={4} maxW="800px" mx="auto">
+                    <Box w="100%" bg="white" p={6} borderRadius="md" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
+                        <VStack spacing={4} align="stretch">
+                            <FormControl isInvalid={!!errors.title}>
+                                <FormLabel htmlFor="title" color="#232323">Job Title</FormLabel>
+                                <Input id="title" {...register('title', { required: 'Title is required' })} bg="white" />
+                                <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+                            </FormControl>
+                            <FormControl isInvalid={!!errors.slug}>
+                                <FormLabel htmlFor="slug" color="#232323">Slug</FormLabel>
+                                <Input
+                                    id="slug"
+                                    {...register('slug', {
+                                        required: 'Slug is required',
+                                        validate: (value) => {
+                                            const otherJobs = job ? allJobs.filter(j => j.id !== job.id) : allJobs;
+                                            const isUnique = !otherJobs.some(j => j.slug === value);
+                                            return isUnique || 'This slug is already in use.';
+                                        }
+                                    })}
+                                    bg="white"
+                                />
+                                <FormErrorMessage>{errors.slug?.message}</FormErrorMessage>
+                            </FormControl>
+                        </VStack>
+                    </Box>
                         
                         <FormControl>
-                            <FormLabel fontSize="lg" fontWeight="semibold" color="gray.700">Job Tags</FormLabel>
-                            <Text fontSize="sm" color="gray.600" mb={4}>
+                            <FormLabel fontSize="lg" fontWeight="semibold" color="#232323" mt={4}>Job Tags</FormLabel>
+                            <Text fontSize="sm" color="#6c757d" mb={4}>
                                 Select relevant tags to help categorize and filter this job posting
                             </Text>
                             
                             {/* Selected Tags Display */}
                             {selectedTags.length > 0 && (
-                                <Box mb={4} p={3} bg="blue.50" borderRadius="lg" border="1px" borderColor="blue.200">
+                                <Box mb={4} p={3} bg="#E9EDC9" borderRadius="lg" border="1px" borderColor="#CCD5AE">
                                     <HStack justify="space-between" mb={2}>
-                                        <Text fontSize="sm" fontWeight="medium" color="blue.700">
+                                        <Text fontSize="sm" fontWeight="medium" color="#232323">
                                             Selected Tags ({selectedTags.length})
                                         </Text>
                                         <Button
                                             size="xs"
                                             variant="ghost"
-                                            colorScheme="blue"
+                                            color="#232323"
                                             onClick={() => setSelectedTags([])}
                                         >
                                             Clear All
@@ -155,8 +160,8 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
                                         {selectedTags.map(tag => (
                                             <Box
                                                 key={tag}
-                                                bg="blue.500"
-                                                color="white"
+                                                bg="#D4A373"
+                                                color="#232323"
                                                 px={3}
                                                 py={1}
                                                 borderRadius="full"
@@ -183,7 +188,7 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
                             )}
 
                             {/* Tag Categories */}
-                            <Box border="1px" borderColor="gray.200" borderRadius="lg" overflow="hidden">
+                            <Box border="1px" borderColor="#E9EDC9" borderRadius="lg" overflow="hidden" bg="#FEFAE0">
                                 {Object.entries(TAG_CATEGORIES).map(([category, tags], index) => (
                                     <Box key={category}>
                                         <Button
@@ -193,27 +198,27 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
                                             width="100%"
                                             justifyContent="space-between"
                                             fontWeight="semibold"
-                                            color="gray.700"
-                                            bg={expandedCategories[category] ? "gray.50" : "white"}
-                                            _hover={{ bg: "gray.100" }}
+                                            color="#232323"
+                                            bg={expandedCategories[category] ? "#FAEDCD" : "white"}
+                                            _hover={{ bg: "#FAEDCD" }}
                                             borderRadius="none"
                                             borderBottom={index < Object.keys(TAG_CATEGORIES).length - 1 ? "1px" : "none"}
-                                            borderColor="gray.200"
+                                            borderColor="#E9EDC9"
                                         >
                                             <HStack spacing={3}>
                                                 <Text fontSize="sm" fontWeight="semibold">
                                                     {category}
                                                 </Text>
-                                                <Badge colorScheme="blue" variant="subtle" fontSize="xs">
+                                                <Badge bg="#CCD5AE" color="#232323" fontSize="xs">
                                                     {tags.length}
                                                 </Badge>
                                             </HStack>
-                                            <Text fontSize="sm" color="gray.500">
+                                            <Text fontSize="sm" color="#6c757d">
                                                 {expandedCategories[category] ? '▼' : '▶'}
                                             </Text>
                                         </Button>
                                         <Collapse in={expandedCategories[category]}>
-                                            <Box p={4} bg="gray.50">
+                                            <Box p={4} bg="#FEFAE0">
                                                 <CheckboxGroup value={selectedTags} onChange={handleTagChange}>
                                                     <Grid templateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={2}>
                                                         {tags.map(tag => (
@@ -221,7 +226,7 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
                                                                 key={tag} 
                                                                 value={tag} 
                                                                 size="md"
-                                                                colorScheme="blue"
+                                                                colorScheme="green"
                                                                 _hover={{ bg: "white", borderRadius: "md" }}
                                                                 p={2}
                                                             >
@@ -240,9 +245,9 @@ export const JobForm = ({ job, allJobs, onSubmit, onCancel, isLoading }: Props) 
                         </FormControl>
                     </VStack>
                 </form>
-            <HStack mt={6} justify="flex-end">
+            <HStack mt={6} justify="flex-end" maxW="800px" mx="auto">
                 <Button type="button" onClick={onCancel} variant="ghost">Cancel</Button>
-                <Button colorScheme="blue" type="submit" form="job-form" isLoading={isLoading}>Save</Button>
+                <Button bg="#D4A373" color="#232323" type="submit" form="job-form" isLoading={isLoading} _hover={{ bg: '#CCD5AE' }}>Save</Button>
             </HStack>
         </Box>
     );

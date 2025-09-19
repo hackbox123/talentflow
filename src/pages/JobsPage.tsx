@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-    Box, Heading, Text, Spinner, useToast, Button, HStack, Icon, Input, Select, VStack, Tag, TagLabel, TagCloseButton, Wrap, WrapItem
+    Box, Heading, Text, Spinner, useToast, Button, HStack, Icon, Input, Select, VStack, Tag, TagLabel, TagCloseButton, Wrap, WrapItem, Container, Stack, Divider
 } from '@chakra-ui/react';
 import { DragHandleIcon } from '@chakra-ui/icons';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
@@ -11,41 +11,52 @@ import { useNavigate } from 'react-router-dom';
 import { FiTag } from "react-icons/fi";
 
 function SortableJobItem({ job, onArchiveToggle, onClick, onEdit }: { job: Job; onArchiveToggle: (job: Job) => void; onClick: () => void; onEdit: () => void; }) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: job.id! });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: job.id! });
     const style = { transform: CSS.Transform.toString(transform), transition };
     return (
         <div ref={setNodeRef} style={style}>
-            <HStack p={4} bg="white" borderWidth="1px" borderRadius="lg" mb={4} boxShadow="sm">
-                <Icon as={DragHandleIcon} cursor="grab" color="gray.400" {...attributes} {...listeners} />
+            <HStack
+                p={4}
+                bg="#FFFFFF"
+                borderLeft="4px solid #D4A373"
+                borderRadius="md"
+                mb={4}
+                boxShadow={isDragging ? "0 12px 32px 0 rgba(212,163,115,0.18), 0 2px 8px 0 rgba(0,0,0,0.10)" : "0 6px 18px rgba(0,0,0,0.06)"}
+                align="start"
+                transition="box-shadow 0.25s cubic-bezier(.4,2,.6,1), transform 0.18s"
+                _hover={{
+                    boxShadow: "0 12px 32px 0 rgba(212,163,115,0.18), 0 2px 8px 0 rgba(0,0,0,0.10)",
+                    transform: "translateY(-2px) scale(1.012)",
+                    bg: "#FEFAE0"
+                }}
+                _active={{
+                    boxShadow: "0 16px 40px 0 rgba(212,163,115,0.22), 0 4px 16px 0 rgba(0,0,0,0.12)",
+                    transform: "scale(0.98)"
+                }}
+            >
+                <Icon as={DragHandleIcon} cursor="grab" color="#6c757d" {...attributes} {...listeners} />
                 <Box flex="1" onClick={onClick} cursor="pointer">
-                    <Heading size="md">{job.title}</Heading>
-                    <Text color="gray.600" fontSize="sm">Status: {job.status}</Text>
+                    <Heading size="md" color="#232323">{job.title}</Heading>
+                    <Text color="#6c757d" fontSize="sm">Status: <Text as="span" color={job.status === 'active' ? '#2a7e2a' : '#6c757d'} fontWeight="semibold">{job.status}</Text></Text>
                     {job.tags && job.tags.length > 0 && (
-                        <HStack wrap="wrap" spacing={1} mt={2}>
+                        <HStack wrap="wrap" spacing={2} mt={3}>
                             {job.tags.slice(0, 3).map(tag => (
-                                <Box
-                                    key={tag}
-                                    bg="blue.100"
-                                    color="blue.800"
-                                    px={2}
-                                    py={1}
-                                    borderRadius="sm"
-                                    fontSize="xs"
-                                    fontWeight="medium"
-                                >
-                                    {tag}
-                                </Box>
+                                <Tag key={tag} size="sm" bg="#E9EDC9" color="#232323" borderRadius="md" fontWeight="medium">
+                                    <TagLabel>{tag}</TagLabel>
+                                </Tag>
                             ))}
                             {job.tags.length > 3 && (
-                                <Text fontSize="xs" color="gray.500">
+                                <Text fontSize="xs" color="#6c757d">
                                     +{job.tags.length - 3} more
                                 </Text>
                             )}
                         </HStack>
                     )}
                 </Box>
-                <Button size="sm" variant="ghost" onClick={onEdit}>Edit</Button>
-                <Button size="sm" variant="outline" onClick={() => onArchiveToggle(job)}>{job.status === 'active' ? 'Archive' : 'Unarchive'}</Button>
+                <Stack direction="row" spacing={2}>
+                    <Button size="sm" variant="ghost" color="#232323" onClick={onEdit} _hover={{ bg: '#FAEDCD' }}>Edit</Button>
+                    <Button size="sm" variant="outline" borderColor="#D4A373" color="#232323" onClick={() => onArchiveToggle(job)} _hover={{ bg: '#E9EDC9' }}>{job.status === 'active' ? 'Archive' : 'Unarchive'}</Button>
+                </Stack>
             </HStack>
         </div>
     );
@@ -162,51 +173,59 @@ export default function JobsPage() {
         }
     };
 
-    if (isLoading) return (<VStack justify="center" h="50vh"><Spinner size="xl" /></VStack>);
+    if (isLoading) return (<VStack justify="center" h="50vh"><Spinner size="xl" color="#D4A373" /></VStack>);
 
     return (
-        <>
-        <Box>
+        <Container maxW="container.xl" py={8}>
+        <Box bg="#FEFAE0" p={6} borderRadius="xl" boxShadow="0 8px 32px rgba(212,163,115,0.08)">
             <HStack justify="space-between" mb={6}>
-                <Heading>Jobs Board</Heading>
-                <Button colorScheme="blue" onClick={() => navigate('/jobs/new')}>Create Job</Button>
+                <Heading color="#232323">Jobs Board</Heading>
+                <Button bg="#D4A373" color="#232323" _hover={{ bg: '#CCD5AE' }} onClick={() => navigate('/jobs/new')}>Create Job</Button>
             </HStack>
             <HStack mb={6} spacing={4}>
-                <Input placeholder="Search title, slug, or tags..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} />
-                <Select placeholder="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <Input placeholder="Search title, slug, or tags..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} bg="white" borderRadius="md" />
+                <Select placeholder="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} bg="white" borderRadius="md">
                     <option value="active">Active</option>
                     <option value="archived">Archived</option>
                 </Select>
                     <Button
                         onClick={() => setShowTagPanel(v => !v)}
                         leftIcon={<FiTag />}
-                        bg="blue.500"
-                        color="white"
-                        fontWeight="medium"
-                        borderRadius="md"
+                        bgGradient={showTagPanel ? "linear(to-r, #D4A373, #E9EDC9)" : "linear(to-r, #FAEDCD, #E9EDC9)"}
+                        color="#232323"
+                        fontWeight="bold"
+                        borderRadius="full"
                         px={8}
                         py={3}
-                        boxShadow="md"
+                        fontSize="md"
+                        boxShadow={showTagPanel ? "0 4px 16px rgba(212,163,115,0.18)" : "0 2px 8px rgba(0,0,0,0.06)"}
+                        borderWidth={showTagPanel ? 2 : 1}
+                        borderColor={showTagPanel ? "#D4A373" : "#E9EDC9"}
+                        letterSpacing="wide"
+                        transition="all 0.22s cubic-bezier(.4,2,.6,1)"
                         _hover={{
-                            bg: "blue.600",
-                            transform: "translateY(-2px)",
-                            boxShadow: "lg",
+                            bgGradient: "linear(to-r, #E9EDC9, #D4A373)",
+                            color: "#232323",
+                            boxShadow: "0 6px 24px rgba(212,163,115,0.16)",
+                            transform: "translateY(-2px) scale(1.04)"
                         }}
                         _active={{
-                            bg: "blue.700",
-                            transform: "scale(0.98)",
+                            bgGradient: "linear(to-r, #D4A373, #E9EDC9)",
+                            color: "#232323",
+                            boxShadow: "0 2px 8px rgba(212,163,115,0.10)",
+                            transform: "scale(0.98)"
                         }}
-                        transition="all 0.2s ease-in-out"
+                        shadow={showTagPanel ? "md" : undefined}
                     >
                         {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
                     </Button>
             </HStack>
             {showTagPanel && (
-                <Box borderWidth="1px" borderRadius="xl" p={6} bg="white" mb={6} boxShadow="lg" borderColor="blue.100">
+                <Box borderWidth="1px" borderRadius="xl" p={6} bg="#FFFFFF" mb={6} boxShadow="0 8px 24px rgba(0,0,0,0.06)" borderColor="#E9EDC9">
                     <HStack justify="space-between" mb={4}>
                         <VStack align="start" spacing={1}>
-                            <Heading size="md" color="gray.800">Filter by Tags</Heading>
-                            <Text fontSize="sm" color="gray.600">
+                            <Heading size="md" color="#232323">Filter by Tags</Heading>
+                            <Text fontSize="sm" color="#6c757d">
                                 Select tags to filter jobs. {ALL_TAGS.length} tags available.
                             </Text>
                         </VStack>
@@ -214,7 +233,7 @@ export default function JobsPage() {
                             <Button 
                                 size="sm" 
                                 variant="ghost" 
-                                colorScheme="blue"
+                                color="#232323"
                                 onClick={() => setTagFilter([])}
                                 isDisabled={tagFilter.length === 0}
                             >
@@ -222,7 +241,8 @@ export default function JobsPage() {
                             </Button>
                             <Button 
                                 size="sm" 
-                                colorScheme="blue"
+                                bg="#D4A373"
+                                color="#232323"
                                 onClick={() => setShowTagPanel(false)}
                             >
                                 Done
@@ -236,20 +256,20 @@ export default function JobsPage() {
                         onChange={(e) => setTagSearch(e.target.value)}
                         mb={4}
                         size="md"
-                        borderColor="gray.300"
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+                        borderColor="#E9EDC9"
+                        _focus={{ borderColor: "#D4A373", boxShadow: "0 0 0 1px #D4A37344" }}
                     />
                     
                     {tagFilter.length > 0 && (
-                        <Box mb={4} p={3} bg="blue.50" borderRadius="lg" border="1px" borderColor="blue.200">
+                        <Box mb={4} p={3} bg="#FEFAE0" borderRadius="lg" border="1px" borderColor="#E9EDC9">
                             <HStack justify="space-between" mb={2}>
-                                <Text fontSize="sm" fontWeight="medium" color="blue.700">
+                                <Text fontSize="sm" fontWeight="medium" color="#232323">
                                     Selected Tags ({tagFilter.length})
                                 </Text>
                                 <Button
                                     size="xs"
                                     variant="ghost"
-                                    colorScheme="blue"
+                                    color="#232323"
                                     onClick={() => setTagFilter([])}
                                 >
                                     Clear All
@@ -259,16 +279,15 @@ export default function JobsPage() {
                                 {tagFilter.map(tag => (
                                     <WrapItem key={tag}>
                                         <Tag 
-                                            colorScheme="blue" 
                                             borderRadius="full" 
                                             size="md"
-                                            bg="blue.500"
-                                            color="white"
+                                            bg="#D4A373"
+                                            color="#232323"
                                         >
                                             <TagLabel>{tag}</TagLabel>
                                             <TagCloseButton 
-                                                color="white"
-                                                _hover={{ bg: "blue.600" }}
+                                                color="#232323"
+                                                _hover={{ bg: "#D4A373" }}
                                                 onClick={() => setTagFilter(prev => prev.filter(t => t !== tag))} 
                                             />
                                         </Tag>
@@ -288,12 +307,14 @@ export default function JobsPage() {
                                             <Button
                                                 size="sm"
                                                 variant={isSelected ? 'solid' : 'outline'}
-                                                colorScheme="blue"
+                                                bg={isSelected ? '#D4A373' : undefined}
+                                                color={isSelected ? '#232323' : '#232323'}
                                                 borderRadius="full"
                                                 fontWeight="medium"
                                                 _hover={{ 
                                                     transform: "translateY(-1px)",
-                                                    boxShadow: "md"
+                                                    boxShadow: "md",
+                                                    bg: isSelected ? '#D4A373' : '#E9EDC9'
                                                 }}
                                                 transition="all 0.2s"
                                                 onClick={() => setTagFilter(prev => isSelected ? prev.filter(t => t !== tag) : [...prev, tag])}
@@ -306,7 +327,7 @@ export default function JobsPage() {
                         </Wrap>
                         {ALL_TAGS.filter(t => t.toLowerCase().includes(tagSearch.toLowerCase())).length === 0 && (
                             <Box textAlign="center" py={8}>
-                                <Text color="gray.500" fontSize="sm">
+                                <Text color="#6c757d" fontSize="sm">
                                     No tags found matching "{tagSearch}"
                                 </Text>
                             </Box>
@@ -315,13 +336,13 @@ export default function JobsPage() {
                 </Box>
             )}
             {jobs.length === 0 && (
-                <VStack py={20} spacing={4} borderWidth="1px" borderRadius="md" bg="white">
-                    <Heading size="md">No jobs found</Heading>
-                    <Text color="gray.600">Try adjusting search or filters.</Text>
+                <VStack py={20} spacing={4} borderWidth="1px" borderRadius="md" bg="#FFFFFF" boxShadow="sm" p={8}>
+                    <Heading size="md" color="#232323">No jobs found</Heading>
+                    <Text color="#6c757d">Try adjusting search or filters.</Text>
                     <HStack>
-                        <Button onClick={() => setSearchFilter('')}>Clear Search</Button>
-                        <Button onClick={() => setStatusFilter('')}>Clear Status</Button>
-                        <Button onClick={() => setTagFilter([])}>Clear Tags</Button>
+                        <Button onClick={() => setSearchFilter('')} bg="#E9EDC9" _hover={{ bg: '#CCD5AE' }}>Clear Search</Button>
+                        <Button onClick={() => setStatusFilter('')} bg="#E9EDC9" _hover={{ bg: '#CCD5AE' }}>Clear Status</Button>
+                        <Button onClick={() => setTagFilter([])} bg="#E9EDC9" _hover={{ bg: '#CCD5AE' }}>Clear Tags</Button>
                     </HStack>
                 </VStack>
             )}
@@ -338,14 +359,15 @@ export default function JobsPage() {
                     ))}
                 </SortableContext>
             </DndContext>
-            <HStack mt={6} justify="center">
-                <Button onClick={() => setCurrentPage(p => p - 1)} isDisabled={currentPage === 1}>Previous</Button>
-                <Text fontWeight="bold">Page {currentPage} of {totalPages}</Text>
-                <Button onClick={() => setCurrentPage(p => p + 1)} isDisabled={currentPage >= totalPages}>Next</Button>
+            <Divider my={6} borderColor="#E9EDC9" />
+            <HStack mt={6} justify="center" spacing={6}>
+                <Button onClick={() => setCurrentPage(p => p - 1)} isDisabled={currentPage === 1} bg="#FAEDCD" _hover={{ bg: '#E9EDC9' }}>Previous</Button>
+                <Text fontWeight="bold" color="#232323">Page {currentPage} of {totalPages}</Text>
+                <Button onClick={() => setCurrentPage(p => p + 1)} isDisabled={currentPage >= totalPages} bg="#FAEDCD" _hover={{ bg: '#E9EDC9' }}>Next</Button>
             </HStack>
             </Box>
             {/* Editor modal removed in favor of dedicated editor routes */}
-            </>
-        
+        </Container>
+
     );
 }

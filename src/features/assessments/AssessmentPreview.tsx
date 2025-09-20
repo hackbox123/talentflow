@@ -87,7 +87,7 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
                   {q.type === 'numeric' && <Input type="number" id={q.id} {...register(q.id, validationRules)} bg="white" fontSize={{ base: 'sm', md: 'md' }} />}
                   {q.type === 'single-choice' && (
                     <RadioGroup>
-                      <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, md: 4 }}>
+                      <Stack direction="column" spacing={2}>
                         {q.options?.map(opt => (
                           <Radio key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }}>{opt}</Radio>
                         ))}
@@ -96,7 +96,7 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
                   )}
                   {q.type === 'multi-choice' && (
                     <CheckboxGroup>
-                      <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, md: 4 }}>
+                      <Stack direction="column" spacing={2}>
                         {q.options?.map(opt => (
                           <Checkbox key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }}>{opt}</Checkbox>
                         ))}

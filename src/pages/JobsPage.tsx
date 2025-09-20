@@ -176,50 +176,51 @@ export default function JobsPage() {
     if (isLoading) return (<VStack justify="center" h="50vh"><Spinner size="xl" color="#D4A373" /></VStack>);
 
     return (
-        <Container maxW="container.xl" py={8}>
-        <Box bg="#FEFAE0" p={6} borderRadius="xl" boxShadow="0 8px 32px rgba(212,163,115,0.08)">
-            <HStack justify="space-between" mb={6}>
-                <Heading color="#232323">Jobs Board</Heading>
-                <Button bg="#D4A373" color="#232323" _hover={{ bg: '#CCD5AE' }} onClick={() => navigate('/jobs/new')}>Create Job</Button>
-            </HStack>
-            <HStack mb={6} spacing={4}>
-                <Input placeholder="Search title, slug, or tags..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} bg="white" borderRadius="md" />
-                <Select placeholder="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} bg="white" borderRadius="md">
+        <Container maxW="container.xl" py={{ base: 4, md: 8 }}>
+        <Box bg="#FEFAE0" p={{ base: 2, sm: 4, md: 6 }} borderRadius="xl" boxShadow="0 8px 32px rgba(212,163,115,0.08)">
+            <Stack direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'stretch', sm: 'center' }} mb={6} spacing={{ base: 4, sm: 0 }}>
+                <Heading color="#232323" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }}>Jobs Board</Heading>
+                <Button w={{ base: 'full', sm: 'auto' }} bg="#D4A373" color="#232323" _hover={{ bg: '#CCD5AE' }} onClick={() => navigate('/jobs/new')}>Create Job</Button>
+            </Stack>
+            <Stack direction={{ base: 'column', md: 'row' }} mb={6} spacing={4} align={{ base: 'stretch', md: 'center' }}>
+                <Input placeholder="Search title, slug, or tags..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} bg="white" borderRadius="md" fontSize={{ base: 'sm', md: 'md' }} />
+                <Select placeholder="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} bg="white" borderRadius="md" fontSize={{ base: 'sm', md: 'md' }}>
                     <option value="active">Active</option>
                     <option value="archived">Archived</option>
                 </Select>
-                    <Button
-                        onClick={() => setShowTagPanel(v => !v)}
-                        leftIcon={<FiTag />}
-                        bgGradient={showTagPanel ? "linear(to-r, #D4A373, #E9EDC9)" : "linear(to-r, #FAEDCD, #E9EDC9)"}
-                        color="#232323"
-                        fontWeight="bold"
-                        borderRadius="full"
-                        px={8}
-                        py={3}
-                        fontSize="md"
-                        boxShadow={showTagPanel ? "0 4px 16px rgba(212,163,115,0.18)" : "0 2px 8px rgba(0,0,0,0.06)"}
-                        borderWidth={showTagPanel ? 2 : 1}
-                        borderColor={showTagPanel ? "#D4A373" : "#E9EDC9"}
-                        letterSpacing="wide"
-                        transition="all 0.22s cubic-bezier(.4,2,.6,1)"
-                        _hover={{
-                            bgGradient: "linear(to-r, #E9EDC9, #D4A373)",
-                            color: "#232323",
-                            boxShadow: "0 6px 24px rgba(212,163,115,0.16)",
-                            transform: "translateY(-2px) scale(1.04)"
-                        }}
-                        _active={{
-                            bgGradient: "linear(to-r, #D4A373, #E9EDC9)",
-                            color: "#232323",
-                            boxShadow: "0 2px 8px rgba(212,163,115,0.10)",
-                            transform: "scale(0.98)"
-                        }}
-                        shadow={showTagPanel ? "md" : undefined}
-                    >
-                        {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
-                    </Button>
-            </HStack>
+                <Button
+                    w={{ base: 'full', md: 'auto' }}
+                    onClick={() => setShowTagPanel(v => !v)}
+                    leftIcon={<FiTag />}
+                    bgGradient={showTagPanel ? "linear(to-r, #D4A373, #E9EDC9)" : "linear(to-r, #FAEDCD, #E9EDC9)"}
+                    color="#232323"
+                    fontWeight="bold"
+                    borderRadius="full"
+                    px={8}
+                    py={3}
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    boxShadow={showTagPanel ? "0 4px 16px rgba(212,163,115,0.18)" : "0 2px 8px rgba(0,0,0,0.06)"}
+                    borderWidth={showTagPanel ? 2 : 1}
+                    borderColor={showTagPanel ? "#D4A373" : "#E9EDC9"}
+                    letterSpacing="wide"
+                    transition="all 0.22s cubic-bezier(.4,2,.6,1)"
+                    _hover={{
+                        bgGradient: "linear(to-r, #E9EDC9, #D4A373)",
+                        color: "#232323",
+                        boxShadow: "0 6px 24px rgba(212,163,115,0.16)",
+                        transform: "translateY(-2px) scale(1.04)"
+                    }}
+                    _active={{
+                        bgGradient: "linear(to-r, #D4A373, #E9EDC9)",
+                        color: "#232323",
+                        boxShadow: "0 2px 8px rgba(212,163,115,0.10)",
+                        transform: "scale(0.98)"
+                    }}
+                    shadow={showTagPanel ? "md" : undefined}
+                >
+                    {`Tags Filter${tagFilter.length ? ` (${tagFilter.length})` : ''}`}
+                </Button>
+            </Stack>
             {showTagPanel && (
                 <Box borderWidth="1px" borderRadius="xl" p={6} bg="#FFFFFF" mb={6} boxShadow="0 8px 24px rgba(0,0,0,0.06)" borderColor="#E9EDC9">
                     <HStack justify="space-between" mb={4}>

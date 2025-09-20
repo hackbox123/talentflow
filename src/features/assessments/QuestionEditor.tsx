@@ -64,7 +64,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
     return (
       <div ref={setNodeRef} style={style}>
         <Box
-          p={6}
+          p={{ base: 3, md: 6 }}
           borderWidth="1px"
           borderRadius="lg"
           bg="white"
@@ -74,8 +74,8 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
           transition="all 0.2s"
         >
           {/* Header */}
-          <HStack justify="space-between" mb={4}>
-              <HStack spacing={3}>
+          <HStack justify="space-between" mb={4} flexDir={{ base: 'column', sm: 'row' }} align={{ base: 'flex-start', sm: 'center' }} gap={2}>
+            <HStack spacing={3} align="center">
               <Icon
                 as={DragHandleIcon}
                 cursor="grab"
@@ -87,7 +87,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
               <Badge
                 bg="#CCD5AE"
                 color="#232323"
-                fontSize="xs"
+                fontSize={{ base: 'xs', md: 'xs' }}
                 px={2}
                 py={1}
                 borderRadius="md"
@@ -97,7 +97,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
               <Badge
                 bg="#FAEDCD"
                 color="#232323"
-                fontSize="xs"
+                fontSize={{ base: 'xs', md: 'xs' }}
                 px={2}
                 py={1}
                 borderRadius="md"
@@ -106,13 +106,14 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
                 {question.type.replace('-', ' ')}
               </Badge>
             </HStack>
-            <IconButton 
-              aria-label="Remove question" 
-              icon={<SmallCloseIcon />} 
-              size="sm" 
+            <IconButton
+              aria-label="Remove question"
+              icon={<SmallCloseIcon />}
+              size={{ base: 'sm', md: 'sm' }}
               variant="ghost"
               colorScheme="red"
-              onClick={() => removeQuestion(question.id)} 
+              onClick={() => removeQuestion(question.id)}
+              alignSelf={{ base: 'flex-end', sm: 'auto' }}
             />
           </HStack>
 
@@ -132,27 +133,28 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
 
             {/* Options for choice questions */}
             {(question.type === 'single-choice' || question.type === 'multi-choice') && (
-              <Box p={4} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
-                <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
+              <Box p={{ base: 2, md: 4 }} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
+                <FormLabel fontSize={{ base: 'xs', md: 'sm' }} fontWeight="medium" color="#232323" mb={3}>
                   Answer Options
                 </FormLabel>
                 <VStack align="stretch" spacing={2}>
                   {question.options?.map((opt, index) => (
                     <InputGroup key={index} size="sm">
-                      <Input 
-                        value={opt} 
+                      <Input
+                        value={opt}
                         onChange={(e) => handleOptionChange(index, e.target.value)}
                         placeholder={`Option ${index + 1}`}
                         bg="white"
+                        fontSize={{ base: 'xs', md: 'sm' }}
                       />
                       <InputRightElement>
-                        <IconButton 
-                          aria-label="Remove option" 
-                          size="xs" 
-                          icon={<SmallCloseIcon />} 
+                        <IconButton
+                          aria-label="Remove option"
+                          size="xs"
+                          icon={<SmallCloseIcon />}
                           variant="ghost"
                           color="#c0392b"
-                          onClick={() => removeOption(index)} 
+                          onClick={() => removeOption(index)}
                         />
                       </InputRightElement>
                     </InputGroup>
@@ -165,6 +167,7 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
                     borderColor="#D4A373"
                     color="#232323"
                     w="fit-content"
+                    fontSize={{ base: 'xs', md: 'sm' }}
                   >
                     Add Option
                   </Button>
@@ -173,8 +176,8 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
             )}
 
             {/* Validation Settings */}
-            <Box p={4} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
-              <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
+            <Box p={{ base: 2, md: 4 }} bg="#FEFAE0" borderRadius="md" border="1px" borderColor="#E9EDC9">
+              <FormLabel fontSize={{ base: 'xs', md: 'sm' }} fontWeight="medium" color="#232323" mb={3}>
                 Validation Rules
               </FormLabel>
               <VStack align="stretch" spacing={3}>
@@ -227,8 +230,8 @@ export const QuestionEditor = ({ question, allQuestions, updateQuestion, removeQ
             </Box>
 
             {/* Conditional Logic */}
-            <Box p={4} bg="#E9EDC9" borderRadius="md" border="1px" borderColor="#CCD5AE">
-              <FormLabel fontSize="sm" fontWeight="medium" color="#232323" mb={3}>
+            <Box p={{ base: 2, md: 4 }} bg="#E9EDC9" borderRadius="md" border="1px" borderColor="#CCD5AE">
+              <FormLabel fontSize={{ base: 'xs', md: 'sm' }} fontWeight="medium" color="#232323" mb={3}>
                 Conditional Logic
               </FormLabel>
               <VStack align="stretch" spacing={3}>

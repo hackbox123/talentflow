@@ -120,25 +120,26 @@ export default function AssessmentBuilderPage() {
   return (
     <Container maxW="full" p={0} bg="#FEFAE0">
       {/* Header */}
-      <Box bg="#FEFAE0" borderBottom="1px" borderColor="#E9EDC9" p={6}>
-        <Flex justify="space-between" align="center" maxW="1200px" mx="auto">
-          <HStack spacing={4}>
+      <Box bg="#FEFAE0" borderBottom="1px" borderColor="#E9EDC9" px={{ base: 4, md: 6 }} py={{ base: 4, md: 6 }}>
+        <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'flex-start', md: 'center' }} maxW="1200px" mx="auto" gap={{ base: 4, md: 0 }}>
+          <HStack spacing={4} align="flex-start">
             <IconButton
               aria-label="Back to job"
               icon={<ArrowBackIcon />}
               variant="ghost"
               onClick={() => navigate(`/jobs/${jobId}`)}
+              size={{ base: 'md', md: 'md' }}
             />
             <VStack align="start" spacing={1}>
-              <Heading size="lg" color="#232323">Assessment Builder</Heading>
-              <Text color="#6c757d" fontSize="sm">
+              <Heading size={{ base: 'md', md: 'lg' }} color="#232323">Assessment Builder</Heading>
+              <Text color="#6c757d" fontSize={{ base: 'xs', md: 'sm' }}>
                 Create and customize your job assessment
               </Text>
             </VStack>
           </HStack>
 
-          <HStack spacing={3}>
-            <Badge bg="#CCD5AE" color="#232323" fontSize="sm" px={3} py={1} borderRadius="full">
+          <HStack spacing={3} mt={{ base: 2, md: 0 }}>
+            <Badge bg="#CCD5AE" color="#232323" fontSize={{ base: 'xs', md: 'sm' }} px={3} py={1} borderRadius="full">
               {questions.length} Questions
             </Badge>
             <Button
@@ -148,6 +149,7 @@ export default function AssessmentBuilderPage() {
               isLoading={saving}
               _hover={{ bg: '#CCD5AE' }}
               leftIcon={<SettingsIcon />}
+              size={{ base: 'sm', md: 'md' }}
             >
               Save Assessment
             </Button>
@@ -155,27 +157,34 @@ export default function AssessmentBuilderPage() {
         </Flex>
       </Box>
 
-      <Grid templateColumns="1fr 420px" gap={6} maxW="1200px" mx="auto" p={6}>
+      {/* Responsive: stack preview below editor on mobile, side-by-side on desktop */}
+      <Grid
+        templateColumns={{ base: '1fr', lg: '1fr 420px' }}
+        gap={6}
+        maxW="1200px"
+        mx="auto"
+        px={{ base: 2, md: 6 }}
+        py={{ base: 4, md: 6 }}
+      >
         {/* Main Editor */}
-        <GridItem bg="#FEFAE0" p={6} overflowY="auto">
+        <GridItem bg="#FEFAE0" p={{ base: 0, md: 6 }} overflowY="auto">
           <VStack spacing={6} align="stretch">
             {/* Add Question Section */}
             <Card bg="white" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
               <CardHeader pb={3}>
-                <HStack justify="space-between">
-                  <Heading size="md" color="#232323">Add Questions</Heading>
-                  <Badge bg="#FAEDCD" color="#232323" px={3} py={1} borderRadius="full">
+                <HStack justify="space-between" flexDir={{ base: 'column', sm: 'row' }} align={{ base: 'flex-start', sm: 'center' }} gap={2}>
+                  <Heading size={{ base: 'sm', md: 'md' }} color="#232323">Add Questions</Heading>
+                  <Badge bg="#FAEDCD" color="#232323" px={3} py={1} borderRadius="full" fontSize={{ base: 'xs', md: 'sm' }}>
                     {questions.length} Total
                   </Badge>
                 </HStack>
               </CardHeader>
               <CardBody pt={0}>
                 <VStack spacing={3} align="stretch">
-                  <Text fontSize="sm" color="#6c757d">
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color="#6c757d">
                     Choose a question type to add to your assessment:
                   </Text>
-                  
-                  <Grid templateColumns="repeat(2, 1fr)" gap={3}>
+                  <Grid templateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)' }} gap={3}>
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -184,11 +193,11 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">Short Text</Text>
                       <Text fontSize="xs" color="#6c757d">Single line input</Text>
                     </Button>
-                    
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -197,11 +206,11 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">Long Text</Text>
                       <Text fontSize="xs" color="#6c757d">Multi-line input</Text>
                     </Button>
-                    
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -210,11 +219,11 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">Numeric</Text>
                       <Text fontSize="xs" color="#6c757d">Number input</Text>
                     </Button>
-                    
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -223,11 +232,11 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">Single Choice</Text>
                       <Text fontSize="xs" color="#6c757d">Radio buttons</Text>
                     </Button>
-                    
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -236,11 +245,11 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">Multi Choice</Text>
                       <Text fontSize="xs" color="#6c757d">Checkboxes</Text>
                     </Button>
-                    
                     <Button
                       leftIcon={<AddIcon />}
                       variant="outline"
@@ -249,6 +258,7 @@ export default function AssessmentBuilderPage() {
                       h="60px"
                       flexDirection="column"
                       gap={1}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                     >
                       <Text fontSize="sm" fontWeight="medium">File Upload</Text>
                       <Text fontSize="xs" color="#6c757d">Document upload</Text>
@@ -309,22 +319,27 @@ export default function AssessmentBuilderPage() {
         </GridItem>
         
         {/* Preview Panel */}
-        <GridItem bg="#FAEDCD" borderLeft="1px" borderColor="#E9EDC9" p={6} overflowY="auto">
+        <GridItem
+          bg="#FAEDCD"
+          borderLeft={{ base: 'none', lg: '1px' }}
+          borderColor="#E9EDC9"
+          p={{ base: 0, md: 6 }}
+          pt={{ base: 6, md: 6 }}
+          overflowY="auto"
+        >
           <VStack spacing={4} align="stretch" h="full">
-            <HStack justify="space-between">
-              <Heading size="md" color="#232323">Live Preview</Heading>
-              <Badge bg="#CCD5AE" color="#232323" px={3} py={1} borderRadius="full">
+            <HStack justify="space-between" flexDir={{ base: 'column', sm: 'row' }} align={{ base: 'flex-start', sm: 'center' }} gap={2}>
+              <Heading size={{ base: 'sm', md: 'md' }} color="#232323">Live Preview</Heading>
+              <Badge bg="#CCD5AE" color="#232323" px={3} py={1} borderRadius="full" fontSize={{ base: 'xs', md: 'sm' }}>
                 <ViewIcon mr={1} />
                 Candidate View
               </Badge>
             </HStack>
-            
-            <Text fontSize="sm" color="#6c757d">
+            <Text fontSize={{ base: 'xs', md: 'sm' }} color="#6c757d">
               This is how candidates will see and interact with your assessment
             </Text>
-            
             {questions.length > 0 ? (
-              <Box flex="1" overflowY="auto" p={4} bg="white" borderRadius="md" boxShadow="0 6px 20px rgba(0,0,0,0.04)">
+              <Box flex="1" overflowY="auto" p={{ base: 2, md: 4 }} bg="white" borderRadius="md" boxShadow="0 6px 20px rgba(0,0,0,0.04)">
                 <AssessmentPreview questions={questions} />
               </Box>
             ) : (

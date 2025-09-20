@@ -171,16 +171,20 @@ export const KanbanBoard = ({ initialCandidates, onCandidatesChange, searchTerm 
     >
       <Box
         overflowX="auto"
-        py={6}
-        px={2}
+        py={{ base: 2, md: 6 }}
+        px={{ base: 1, sm: 2 }}
         bg="#FEFAE0"
-        minH="calc(100vh - 120px)"
+        minH={{ base: '60vh', md: 'calc(100vh - 120px)' }}
         borderRadius="2xl"
         boxShadow="sm"
         border="1.5px solid #E9EDC9"
         transition="box-shadow 0.2s"
       >
-        <HStack spacing={6} align="flex-start" minW="1200px">
+        <HStack
+          spacing={{ base: 2, sm: 4, md: 6 }}
+          align="flex-start"
+          minW={{ base: '600px', sm: '900px', md: '1200px' }}
+        >
           {STAGES.map(stage => (
             <KanbanColumn
               key={stage}

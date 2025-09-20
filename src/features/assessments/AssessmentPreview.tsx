@@ -56,57 +56,74 @@ export const AssessmentPreview = ({ questions }: { questions: Question[] }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={{ base: 4, md: 6 }} align="stretch" px={{ base: 0, md: 2 }}>
         {questions.length === 0 ? (
-          <Text color="#6c757d" textAlign="center" py={8}>
+          <Text color="#6c757d" textAlign="center" py={{ base: 6, md: 8 }} fontSize={{ base: 'sm', md: 'md' }}>
             No questions added yet. Add questions in the editor to see the preview.
           </Text>
         ) : (
           questions.map(q => {
             if (!shouldShowQuestion(q)) return null;
 
-          const validationRules = {
-            required: q.validation?.required ? "This field is required" : false,
-            maxLength: q.validation?.maxLength ? { value: q.validation.maxLength, message: `Must be ${q.validation.maxLength} characters or less` } : undefined,
-            min: q.validation?.min !== undefined ? { value: q.validation.min, message: `Minimum value is ${q.validation.min}` } : undefined,
-            max: q.validation?.max !== undefined ? { value: q.validation.max, message: `Maximum value is ${q.validation.max}` } : undefined,
-          };
+            const validationRules = {
+              required: q.validation?.required ? "This field is required" : false,
+              maxLength: q.validation?.maxLength ? { value: q.validation.maxLength, message: `Must be ${q.validation.maxLength} characters or less` } : undefined,
+              min: q.validation?.min !== undefined ? { value: q.validation.min, message: `Minimum value is ${q.validation.min}` } : undefined,
+              max: q.validation?.max !== undefined ? { value: q.validation.max, message: `Maximum value is ${q.validation.max}` } : undefined,
+            };
 
-          return (
-            <Box key={q.id} bg="white" p={4} borderRadius="md" boxShadow="0 6px 20px rgba(0,0,0,0.04)">
-              <FormControl isInvalid={!!errors[q.id]} isRequired={q.validation?.required}>
-                <FormLabel htmlFor={q.id} color="#232323">{q.label}</FormLabel>
-                {q.type === 'short-text' && <Input id={q.id} {...register(q.id, validationRules)} bg="white" />}
-                {q.type === 'long-text' && <Textarea id={q.id} {...register(q.id, validationRules)} bg="white" />}
-                {q.type === 'numeric' && <Input type="number" id={q.id} {...register(q.id, validationRules)} bg="white" />}
-                {q.type === 'single-choice' && (
-                  <RadioGroup>
-                    <Stack>
-                      {q.options?.map(opt => (
-                        <Radio key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green">{opt}</Radio>
-                      ))}
-                    </Stack>
-                  </RadioGroup>
-                )}
-                {q.type === 'multi-choice' && (
-                  <CheckboxGroup>
-                    <Stack>
-                      {q.options?.map(opt => (
-                        <Checkbox key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green">{opt}</Checkbox>
-                      ))}
-                    </Stack>
-                  </CheckboxGroup>
-                )}
-                {q.type === 'file' && <Input type="file" id={q.id} isDisabled p={1} />}
-                {/* CORRECTED: Display the actual error message */}
-                <FormErrorMessage>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
-              </FormControl>
-            </Box>
-          );
+            return (
+              <Box
+                key={q.id}
+                bg="white"
+                p={{ base: 2, md: 4 }}
+                borderRadius="md"
+                boxShadow="0 6px 20px rgba(0,0,0,0.04)"
+              >
+                <FormControl isInvalid={!!errors[q.id]} isRequired={q.validation?.required}>
+                  <FormLabel htmlFor={q.id} color="#232323" fontSize={{ base: 'sm', md: 'md' }}>{q.label}</FormLabel>
+                  {q.type === 'short-text' && <Input id={q.id} {...register(q.id, validationRules)} bg="white" fontSize={{ base: 'sm', md: 'md' }} />}
+                  {q.type === 'long-text' && <Textarea id={q.id} {...register(q.id, validationRules)} bg="white" fontSize={{ base: 'sm', md: 'md' }} />}
+                  {q.type === 'numeric' && <Input type="number" id={q.id} {...register(q.id, validationRules)} bg="white" fontSize={{ base: 'sm', md: 'md' }} />}
+                  {q.type === 'single-choice' && (
+                    <RadioGroup>
+                      <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, md: 4 }}>
+                        {q.options?.map(opt => (
+                          <Radio key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }}>{opt}</Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  )}
+                  {q.type === 'multi-choice' && (
+                    <CheckboxGroup>
+                      <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, md: 4 }}>
+                        {q.options?.map(opt => (
+                          <Checkbox key={opt} value={opt} {...register(q.id, validationRules)} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }}>{opt}</Checkbox>
+                        ))}
+                      </Stack>
+                    </CheckboxGroup>
+                  )}
+                  {q.type === 'file' && <Input type="file" id={q.id} isDisabled p={1} fontSize={{ base: 'sm', md: 'md' }} />}
+                  {/* CORRECTED: Display the actual error message */}
+                  <FormErrorMessage fontSize={{ base: 'xs', md: 'sm' }}>{errors[q.id] && String(errors[q.id]?.message)}</FormErrorMessage>
+                </FormControl>
+              </Box>
+            );
           })
         )}
         {questions.length > 0 && (
-          <Button type="submit" bg="#D4A373" color="#232323" mt={4} _hover={{ bg: '#CCD5AE' }}>Submit Assessment</Button>
+          <Button
+            type="submit"
+            bg="#D4A373"
+            color="#232323"
+            mt={4}
+            _hover={{ bg: '#CCD5AE' }}
+            fontSize={{ base: 'sm', md: 'md' }}
+            w={{ base: 'full', md: 'fit-content' }}
+            alignSelf={{ base: 'stretch', md: 'flex-start' }}
+          >
+            Submit Assessment
+          </Button>
         )}
       </VStack>
     </form>

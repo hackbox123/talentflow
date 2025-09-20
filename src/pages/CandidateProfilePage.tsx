@@ -140,82 +140,85 @@ const CandidateProfilePage = () => {
   }, [candidateId]);
   
   if (loading) return (
-    <Box display="flex" alignItems="center" justifyContent="center" minH="40vh">
+    <Box display="flex" alignItems="center" justifyContent="center" minH="40vh" px={2}>
       <Spinner size="lg" color="#D4A373" />
     </Box>
   );
-  if (!candidate) return <Text color="#6c757d">Candidate not found.</Text>;
+  if (!candidate) return <Text color="#6c757d" px={2}>Candidate not found.</Text>;
 
   return (
-    <Box bg="#FEFAE0" minH="80vh" p={6}>
-      <Box maxW="container.md" mx="auto" bg="white" p={6} borderRadius="xl" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
-        <VStack spacing={8} align="stretch">
+    <Box bg="#FEFAE0" minH="80vh" p={{ base: 2, sm: 4, md: 6 }}>
+      <Box maxW="container.md" mx="auto" bg="white" p={{ base: 2, sm: 4, md: 6 }} borderRadius="xl" boxShadow="0 8px 32px rgba(212,163,115,0.06)">
+        <VStack spacing={{ base: 6, md: 8 }} align="stretch">
           <Box>
-            <Heading color="#232323">{candidate.name}</Heading>
-            <Text color="#6c757d">{candidate.email}</Text>
-            <Text mt={2} color="#232323">Status: <Text as="span" fontWeight="semibold">{candidate.stage}</Text></Text>
+            <Heading color="#232323" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }}>{candidate.name}</Heading>
+            <Text color="#6c757d" fontSize={{ base: 'sm', md: 'md' }}>{candidate.email}</Text>
+            <Text mt={2} color="#232323" fontSize={{ base: 'sm', md: 'md' }}>Status: <Text as="span" fontWeight="semibold">{candidate.stage}</Text></Text>
             {job && (
               <Box mt={3}>
-                <HStack spacing={3} align="center">
-                  <Text color="#6c757d">Applied for:</Text>
-                  <Button as={RouterLink} to={`/jobs/${job.id}`} size="sm" variant="link" color="#232323">
-                    {job.title}
-                  </Button>
-                  <HStack spacing={1}>
-                    {job.tags.slice(0, 3).map(t => (
-                      <Tag key={t} size="sm" bg="#E9EDC9" color="#232323" borderRadius="md">
-                        <TagLabel>{t}</TagLabel>
-                      </Tag>
-                    ))}
+                <VStack spacing={2} align={{ base: 'stretch', sm: 'center' }} flexWrap="wrap" direction={{ base: 'column', sm: 'row' }}>
+                  <HStack spacing={2} align="center" flexWrap="wrap">
+                    <Text color="#6c757d" fontSize={{ base: 'sm', md: 'md' }}>Applied for:</Text>
+                    <Button as={RouterLink} to={`/jobs/${job.id}`} size="sm" variant="link" color="#232323">
+                      {job.title}
+                    </Button>
+                    <HStack spacing={1} flexWrap="wrap">
+                      {job.tags.slice(0, 3).map(t => (
+                        <Tag key={t} size="sm" bg="#E9EDC9" color="#232323" borderRadius="md">
+                          <TagLabel>{t}</TagLabel>
+                        </Tag>
+                      ))}
+                    </HStack>
                   </HStack>
-                </HStack>
+                </VStack>
               </Box>
             )}
           </Box>
 
           <Box>
-            <Heading size="lg" mb={4} color="#232323">Timeline</Heading>
+            <Heading size="lg" mb={4} color="#232323" fontSize={{ base: 'lg', md: 'xl' }}>Timeline</Heading>
             <List spacing={3}>
               {timeline.map((item, index) => (
-                <ListItem key={index} display="flex" alignItems="flex-start" p={3} borderLeft="4px solid"
+                <ListItem key={index} display="flex" flexDirection={{ base: 'column', sm: 'row' }} alignItems={{ base: 'stretch', sm: 'flex-start' }} p={{ base: 2, sm: 3 }} borderLeft="4px solid"
                   borderLeftColor={getStageColor(item.stage)}
                   bg="#FEFAE0"
                   borderRadius="md"
                   mb={2}
                 >
                   <Box flex={1}>
-                    <HStack spacing={2} mb={1}>
-                      <Text fontWeight="bold" color="#232323">{item.event}</Text>
+                    <HStack spacing={2} mb={1} flexWrap="wrap">
+                      <Text fontWeight="bold" color="#232323" fontSize={{ base: 'sm', md: 'md' }}>{item.event}</Text>
                       <Tag size="sm" bg="#CCD5AE" color="#232323">
                         {item.stage}
                       </Tag>
                     </HStack>
-                    <Text fontSize="sm" color="#6c757d" mb={1}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="#6c757d" mb={1}>
                       {new Date(item.date).toLocaleString()}
                     </Text>
                     {item.notes && (
-                      <Text fontSize="sm" color="#232323">{item.notes}</Text>
+                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="#232323">{item.notes}</Text>
                     )}
                   </Box>
                 </ListItem>
               ))}
               {timeline.length === 0 && (
-                <Text color="#6c757d" fontSize="sm">No timeline events yet.</Text>
+                <Text color="#6c757d" fontSize={{ base: 'xs', md: 'sm' }}>No timeline events yet.</Text>
               )}
             </List>
           </Box>
 
           <Box>
-            <Heading size="lg" mb={4} color="#232323">Notes</Heading>
+            <Heading size="lg" mb={4} color="#232323" fontSize={{ base: 'lg', md: 'xl' }}>Notes</Heading>
             <VStack align="stretch" spacing={2}>
               <Textarea
                 ref={textareaRef}
                 placeholder="Add a note... Type @ to mention a user."
                 value={note}
                 onChange={handleNoteChange}
-                minH="120px"
+                minH={{ base: '80px', md: '120px' }}
                 bg="white"
                 borderRadius="md"
+                fontSize={{ base: 'sm', md: 'md' }}
               />
 
               {/* Inline suggestions dropdown */}
@@ -256,7 +259,7 @@ const CandidateProfilePage = () => {
                   bg="white"
                   p={3}
                 >
-                  <Text color="#6c757d" fontSize="sm">No users found for "@{mentionQuery}"</Text>
+                  <Text color="#6c757d" fontSize={{ base: 'xs', md: 'sm' }}>No users found for "@{mentionQuery}"</Text>
                 </Box>
               )}
             </VStack>

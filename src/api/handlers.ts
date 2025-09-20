@@ -1,10 +1,9 @@
-// src/api/handlers.ts
 import { http, HttpResponse, delay } from 'msw';
 import { db } from './db';
 import { type Job, type Timeline } from './db';
 import { type Assessment, type AssessmentResponse } from './db';
 
-// Helper functions for stage changes
+// this function helping to track stage changes
 function getStageChangeMessage(stage: string): string {
   switch (stage) {
     case 'applied': return 'Application Received';
@@ -34,8 +33,6 @@ export const handlers = [
   http.get('/jobs', async ({ request }) => {
     await delay(500);
     const url = new URL(request.url);
-
-    // Extract query params
     const page = parseInt(url.searchParams.get('page') || '1');
     const pageSize = parseInt(url.searchParams.get('pageSize') || '10');
     const status = url.searchParams.get('status');

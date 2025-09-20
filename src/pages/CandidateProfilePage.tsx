@@ -15,7 +15,7 @@ import {
   TagLabel,
   Button,
 } from '@chakra-ui/react';
-import { type Candidate, type Job, type Timeline } from '../api/db';
+import { type Candidate, type Job } from '../api/db';
 import { Link as RouterLink } from 'react-router-dom';
 
 function getStageColor(stage?: string): string {
@@ -30,17 +30,6 @@ function getStageColor(stage?: string): string {
   }
 }
 
-function getStageColorScheme(stage?: string): string {
-  switch (stage) {
-    case 'applied': return 'blue';
-    case 'screen': return 'purple';
-    case 'tech': return 'orange';
-    case 'offer': return 'green';
-    case 'hired': return 'teal';
-    case 'rejected': return 'red';
-    default: return 'gray';
-  }
-}
 
 // Hardcoded list of users for mentions
 const MENTION_SUGGESTIONS = [

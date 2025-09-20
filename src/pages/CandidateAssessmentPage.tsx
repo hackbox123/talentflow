@@ -25,7 +25,6 @@ export default function CandidateAssessmentPage() {
   const toast = useToast();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchAssessment = async () => {

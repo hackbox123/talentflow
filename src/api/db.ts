@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 
-// Define the structure of our data
+// Defining the structure of our data for jobs,candidates,assessments,timelines
 export interface Job {
   id?: number;
   title: string;
@@ -29,7 +29,7 @@ export interface Timeline {
 }
 
 export interface Question {
-  id: string; // e.g., 'q1', 'q2'
+  id: string;
   type: 'single-choice' | 'multi-choice' | 'short-text' | 'long-text' | 'numeric' | 'file';
   label: string;
   options?: string[];
@@ -53,11 +53,11 @@ export interface Assessment {
 export interface AssessmentResponse {
   id?: number;
   candidateId: number;
-  assessmentId: number; // This would be the jobId
-  responses: Record<string, any>; // e.g., { q1: 'Yes', q2: 'Some text' }
+  assessmentId: number; // will be same as jobid
+  responses: Record<string, any>; //will store questions
 }
 
-// This is our database class
+
 class TalentFlowDB extends Dexie {
   jobs!: Table<Job>;
   candidates!: Table<Candidate>;
@@ -77,5 +77,5 @@ class TalentFlowDB extends Dexie {
   }
 }
 
-// Export a single instance of the database
+// Exporting the instance of the database
 export const db = new TalentFlowDB();

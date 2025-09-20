@@ -65,7 +65,7 @@ export default function LandingPage() {
                 _hover={{ bg: '#CCD5AE', transform: 'translateY(-3px) scale(1.04)' }}
                 onClick={() => navigate('/jobs')}
               >
-                Explore Jobs
+                Manage Jobs
               </Button>
               <Button
                 size="lg"
@@ -80,7 +80,7 @@ export default function LandingPage() {
                 _hover={{ bg: '#FAEDCD', borderColor: '#D4A373', color: '#232323' }}
                 onClick={() => navigate('/candidates')}
               >
-                Meet Candidates
+                Show Candidates
               </Button>
             </HStack>
             <Text fontSize="md" color="#6c757d" pt={4} textAlign="left">

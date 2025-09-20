@@ -1,5 +1,7 @@
 # TalentFlow - Mini Hiring Platform
 
+[🌐 Live Demo](https://talentflow-mini-hiring-platform.netlify.app/)
+
 A comprehensive React application that enables HR teams to manage jobs, candidates, and assessments in a streamlined hiring process.
 
 ## 🚀 Features
